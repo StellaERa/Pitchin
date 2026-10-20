@@ -1,6 +1,6 @@
-# Access Control System for Oraculum
+# Access Control System for Pitchin
 
-A comprehensive Role-Based Access Control (RBAC) system for the Oraculum project, built on Soroban smart contracts.
+A comprehensive Role-Based Access Control (RBAC) system for the Pitchin project, built on Soroban smart contracts.
 
 ## Overview
 

@@ -97,7 +97,7 @@ semver_parse() {
     echo "${parts[0]:-0} ${parts[1]:-0} ${parts[2]:-0}"
 }
 
-echo "━━━ Oraculum — Soroban SDK Compatibility Check ━━━━━━━"
+echo "━━━ Pitchin — Soroban SDK Compatibility Check ━━━━━━━"
 echo ""
 
 # ── Extract current SDK version from workspace ────────────────

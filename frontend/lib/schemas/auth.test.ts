@@ -90,7 +90,7 @@ describe("accountSetupSchema", () => {
   // only the field it cares about. `as const` keeps "member" as a literal type
   const valid = {
     userType: "member" as const,
-    organizationName: "Oraculum",
+    organizationName: "Pitchin",
     password: "Sup3r$ecret!",
     confirmPassword: "Sup3r$ecret!",
     agreeToTerms: true,

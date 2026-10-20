@@ -1,6 +1,6 @@
 # Soroban SDK Upgrade Path
 
-This document describes how to safely upgrade the Soroban SDK version used by the Oraculum contracts, using the compatibility check tooling.
+This document describes how to safely upgrade the Soroban SDK version used by the Pitchin contracts, using the compatibility check tooling.
 
 ## Prerequisites
 

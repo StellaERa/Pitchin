@@ -1,7 +1,7 @@
 //! # Storage Versioning for Contract Upgrades
 //!
 //! Provides a `StorageVersion` struct and migration helpers that allow
-//! Oraculum contracts to track their storage schema version. This enables
+//! Pitchin contracts to track their storage schema version. This enables
 //! safe, incremental upgrades: each new contract version bumps the storage
 //! version and can run migration logic to transform existing data.
 //!

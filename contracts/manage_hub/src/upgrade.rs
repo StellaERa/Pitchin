@@ -1,4 +1,4 @@
-//! Token upgrade mechanism for Oraculum.
+//! Token upgrade mechanism for Pitchin.
 //!
 //! This module implements:
 //! - `set_upgrade_config`     — admin configures upgrade behaviour

@@ -84,7 +84,7 @@ describe('JwtStrategy Unit Tests (#53 BE-45)', () => {
 
   const mockUser = {
     id: 'usr_123',
-    email: 'dev@oraculum.app',
+    email: 'dev@Pitchin.app',
     role: 'ADMIN',
     isActive: true,
   };

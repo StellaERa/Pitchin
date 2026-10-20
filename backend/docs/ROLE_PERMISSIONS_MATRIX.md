@@ -1,6 +1,6 @@
 # 🔐 Role-Permission Matrix Reference
 
-This document details the capability mapping across Global and Workspace-level roles in Oraculum.
+This document details the capability mapping across Global and Workspace-level roles in Pitchin.
 
 ## 🌐 Global Roles
 

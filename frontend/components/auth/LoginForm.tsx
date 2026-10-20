@@ -191,7 +191,7 @@ export default function LoginForm({ onEmailLogin, isLoading }: LoginFormProps) {
 
         {/* Footer */}
         <div className="text-center text-xs text-gray-500">
-          <p>© 2026 Oraculum. All rights reserved.</p>
+          <p>© 2026 Pitchin. All rights reserved.</p>
           <div className="mt-2 space-x-4">
             <a href="#" className="hover:text-gray-700">
               Privacy Policy

@@ -1,4 +1,4 @@
-//! Pause-related error types for the Oraculum contract.
+//! Pause-related error types for the Pitchin contract.
 //!
 //! A dedicated `PauseError` enum (separate from the main `Error` enum) is used
 //! because `#[contracterror]` enforces a hard 50-variant XDR limit and the main

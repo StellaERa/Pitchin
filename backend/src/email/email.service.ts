@@ -360,7 +360,7 @@ export class EmailService {
       { fullName, ...data },
       locale,
     );
-    return this.send(email, 'Booking Created — Oraculum', html);
+    return this.send(email, 'Booking Created — Pitchin', html);
   }
 
   async sendBookingReminderEmail(
@@ -382,7 +382,7 @@ export class EmailService {
       { fullName, ...data },
       locale,
     );
-    return this.send(email, 'Booking Reminder — Oraculum', html);
+    return this.send(email, 'Booking Reminder — Pitchin', html);
   }
 
   async sendPaymentSuccessEmail(
@@ -402,7 +402,7 @@ export class EmailService {
       { fullName, ...data },
       locale,
     );
-    return this.send(email, 'Payment Successful — Oraculum', html);
+    return this.send(email, 'Payment Successful — Pitchin', html);
   }
 
   async sendPaymentFailedEmail(
@@ -419,7 +419,7 @@ export class EmailService {
       { fullName, ...data },
       locale,
     );
-    return this.send(email, 'Payment Failed — Oraculum', html);
+    return this.send(email, 'Payment Failed — Pitchin', html);
   }
 
   async sendBookingCancelledEmail(
@@ -439,7 +439,7 @@ export class EmailService {
       { fullName, ...data },
       locale,
     );
-    return this.send(email, 'Booking Cancelled — Oraculum', html);
+    return this.send(email, 'Booking Cancelled — Pitchin', html);
   }
 
   async sendInvoiceReadyEmail(
@@ -458,7 +458,7 @@ export class EmailService {
       { fullName, ...data },
       locale,
     );
-    return this.send(email, `Invoice ${data.invoiceNumber} — Oraculum`, html, [
+    return this.send(email, `Invoice ${data.invoiceNumber} — Pitchin`, html, [
       {
         filename: `${data.invoiceNumber}.pdf`,
         content: pdfBuffer,

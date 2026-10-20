@@ -35,7 +35,7 @@ export class SetupTotpProvider {
     await this.usersRepository.save(user);
 
     const otpauth = generateURI({
-      issuer: 'Oraculum',
+      issuer: 'Pitchin',
       label: user.email,
       secret,
     });

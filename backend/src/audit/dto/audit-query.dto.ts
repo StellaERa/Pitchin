@@ -28,7 +28,7 @@ export class AuditQueryDto extends PaginationDto {
   @IsEnum(['SUCCESS', 'FAILURE'] as const)
   outcome?: 'SUCCESS' | 'FAILURE';
 
-  @ApiPropertyOptional({ example: 'admin@Oraculum.app' })
+  @ApiPropertyOptional({ example: 'admin@Pitchin.app' })
   @IsOptional()
   @IsString()
   @MaxLength(254)

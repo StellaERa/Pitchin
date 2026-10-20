@@ -27,7 +27,7 @@ export const DEV_API_URL = "http://localhost:3000/api";
 
 const MISSING_API_URL_MESSAGE =
   `${API_URL_ENV_VAR} is not set. Provide the public base URL of the backend API ` +
-  `(for example https://api.oraculum.app). It may only be omitted outside production, ` +
+  `(for example https://api.Pitchin.app). It may only be omitted outside production, ` +
   `where it defaults to ${DEV_API_URL}.`;
 
 function stripTrailingSlashes(value: string): string {
@@ -62,6 +62,6 @@ export function resolveApiBaseUrl(): string {
  */
 export const env = {
   NEXT_PUBLIC_API_URL: resolveApiBaseUrl(),
-  NEXT_PUBLIC_APP_NAME: process.env.NEXT_PUBLIC_APP_NAME ?? "Oraculum",
+  NEXT_PUBLIC_APP_NAME: process.env.NEXT_PUBLIC_APP_NAME ?? "Pitchin",
   NODE_ENV: process.env.NODE_ENV ?? "development",
 } as const;

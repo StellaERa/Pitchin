@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # ────────────────────────────────────────────────────────────────
-# scripts/coverage.sh — Code-coverage runner for Oraculum contracts
+# scripts/coverage.sh — Code-coverage runner for Pitchin contracts
 #
 # Prerequisites:
 #   cargo-tarpaulin  (install: cargo install cargo-tarpaulin)
@@ -29,7 +29,7 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-echo "━━━ Oraculum Coverage Report ━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "━━━ Pitchin Coverage Report ━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "  Engine:   ${ENGINE}"
 echo "  Contracts workspace: ${WORKSPACE_DIR}/contracts"
 echo ""

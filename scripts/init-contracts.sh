@@ -2,7 +2,7 @@
 # ------------------------------------------------------------------
 # init-contracts.sh
 #
-# Initialises every Oraculum contract with the required admin
+# Initialises every Pitchin contract with the required admin
 # address, payment-token address, and other constructor parameters.
 #
 # Prerequisites:

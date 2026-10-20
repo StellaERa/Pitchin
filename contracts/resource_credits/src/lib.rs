@@ -1,7 +1,7 @@
 #![no_std]
 
 // The env.events().publish() API is deprecated in favour of #[contractevent],
-// kept here for consistency with the rest of the Oraculum contracts.
+// kept here for consistency with the rest of the Pitchin contracts.
 #![allow(deprecated)]
 
 mod errors;

@@ -141,8 +141,8 @@ const ContactUsPage = () => {
     {
       icon: <Mail className="h-6 w-6" />,
       title: "Email",
-      content: "support@Oraculum.com",
-      link: "mailto:support@Oraculum.com",
+      content: "support@Pitchin.com",
+      link: "mailto:support@Pitchin.com",
     },
     {
       icon: <Phone className="h-6 w-6" />,
@@ -181,7 +181,7 @@ const ContactUsPage = () => {
                 <Building2 className="h-8 w-8 text-white" />
               </div>
             </div>
-            <h1 className="text-3xl font-bold text-gray-900">Oraculum</h1>
+            <h1 className="text-3xl font-bold text-gray-900">Pitchin</h1>
           </div>
 
           {/* Success Card */}
@@ -254,7 +254,7 @@ const ContactUsPage = () => {
             Get in Touch
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Have questions about Oraculum? We'd love to hear from you. Send us a
+            Have questions about Pitchin? We'd love to hear from you. Send us a
             message and we'll respond as soon as possible.
           </p>
         </div>
@@ -569,7 +569,7 @@ const ContactUsPage = () => {
 
         {/* Footer */}
         <div className="text-center mt-12 text-sm text-gray-500">
-          <p>© 2026 Oraculum. All rights reserved.</p>
+          <p>© 2026 Pitchin. All rights reserved.</p>
           <div className="mt-2 space-x-4">
             <a href="#" className="hover:text-gray-700">
               Privacy Policy

@@ -1,9 +1,9 @@
 #![no_std]
 
-//! Common types for Oraculum contracts.
+//! Common types for Pitchin contracts.
 //!
 //! This crate provides shared enums and structs to ensure consistency
-//! across all Oraculum smart contracts.
+//! across all Pitchin smart contracts.
 
 mod types;
 pub mod canonicalization;

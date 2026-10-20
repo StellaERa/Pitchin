@@ -16,8 +16,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Oraculum - Smart Hub & Workspace Management",
-    template: "%s | Oraculum",
+    default: "Pitchin - Smart Hub & Workspace Management",
+    template: "%s | Pitchin",
   },
   description:
     "Smart Hub & Workspace Management System for modern teams. Streamline operations, manage resources, and boost productivity with our comprehensive management platform.",
@@ -30,16 +30,16 @@ export const metadata: Metadata = {
     "collaboration tools",
     "project management",
   ],
-  authors: [{ name: "Oraculum Team" }],
-  creator: "Oraculum",
-  publisher: "Oraculum",
+  authors: [{ name: "Pitchin Team" }],
+  creator: "Pitchin",
+  publisher: "Pitchin",
   formatDetection: {
     email: false,
     address: false,
     telephone: false,
   },
   metadataBase: new URL(
-    process.env.NEXT_PUBLIC_APP_URL || "https://Oraculum.app",
+    process.env.NEXT_PUBLIC_APP_URL || "https://Pitchin.app",
   ),
   alternates: {
     canonical: "/",
@@ -48,27 +48,27 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     url: "/",
-    title: "Oraculum - Smart Hub & Workspace Management",
+    title: "Pitchin - Smart Hub & Workspace Management",
     description:
       "Smart Hub & Workspace Management System for modern teams. Streamline operations, manage resources, and boost productivity with our comprehensive management platform.",
-    siteName: "Oraculum",
+    siteName: "Pitchin",
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "Oraculum - Smart Hub & Workspace Management",
+        alt: "Pitchin - Smart Hub & Workspace Management",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Oraculum - Smart Hub & Workspace Management",
+    title: "Pitchin - Smart Hub & Workspace Management",
     description:
       "Smart Hub & Workspace Management System for modern teams. Streamline operations, manage resources, and boost productivity.",
     images: ["/og-image.png"],
-    creator: "@Oraculums",
-    site: "@Oraculums",
+    creator: "@Pitchins",
+    site: "@Pitchins",
   },
   robots: {
     index: true,

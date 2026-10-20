@@ -23,7 +23,7 @@ interface BuildMetadataInput {
  */
 export function createSEODefaults() {
   return {
-    title: "Oraculum",
+    title: "Pitchin",
     description: "Smart Hub & Workspace Management System",
     keywords: [
       "workspace",
@@ -34,7 +34,7 @@ export function createSEODefaults() {
       "collaboration",
       "efficiency",
     ],
-    siteName: "Oraculum",
+    siteName: "Pitchin",
     locale: "en_US",
     type: "website" as const,
   };

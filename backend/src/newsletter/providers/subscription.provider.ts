@@ -85,7 +85,7 @@ export class NewsletterProvider {
           fullName: fullName ?? 'there',
           confirmUrl,
           expiresIn: '24 hours',
-          appName: 'Oraculum',
+          appName: 'Pitchin',
           year: String(new Date().getFullYear()),
         },
       );
@@ -172,7 +172,7 @@ export class NewsletterProvider {
       'newsletter-unsubscribed',
       {
         fullName: fullName ?? 'there',
-        appName: 'Oraculum',
+        appName: 'Pitchin',
         year: String(new Date().getFullYear()),
       },
     );
@@ -234,7 +234,7 @@ export class NewsletterProvider {
         email: subscriber.email,
         dashboardUrl: this.buildFrontendUrl('/'),
         unsubscribeUrl,
-        appName: 'Oraculum',
+        appName: 'Pitchin',
         year: String(new Date().getFullYear()),
       },
     );

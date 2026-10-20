@@ -56,7 +56,7 @@ fn test_initialize() {
     let client = MembershipTokenClient::new(&env, &contract_id);
 
     let access_control_addr = Address::generate(&env);
-    let name = String::from_str(&env, "Oraculum Token");
+    let name = String::from_str(&env, "Pitchin Token");
     let symbol = String::from_str(&env, "MHT");
     let decimals = 8u32;
 
@@ -143,7 +143,7 @@ fn test_mint_with_access_control() {
     let contract_id = env.register(MembershipToken, ());
     let client = MembershipTokenClient::new(&env, &contract_id);
 
-    let name = String::from_str(&env, "Oraculum Token");
+    let name = String::from_str(&env, "Pitchin Token");
     let symbol = String::from_str(&env, "MHT");
     let decimals = 8u32;
 
@@ -177,7 +177,7 @@ fn test_transfer() {
     let contract_id = env.register(MembershipToken, ());
     let client = MembershipTokenClient::new(&env, &contract_id);
 
-    let name = String::from_str(&env, "Oraculum Token");
+    let name = String::from_str(&env, "Pitchin Token");
     let symbol = String::from_str(&env, "MHT");
     let decimals = 8u32;
 
@@ -214,7 +214,7 @@ fn test_transfer_from() {
     let contract_id = env.register(MembershipToken, ());
     let client = MembershipTokenClient::new(&env, &contract_id);
 
-    let name = String::from_str(&env, "Oraculum Token");
+    let name = String::from_str(&env, "Pitchin Token");
     let symbol = String::from_str(&env, "MHT");
     let decimals = 8u32;
 
@@ -258,7 +258,7 @@ fn test_transfer_owner_only() {
     let contract_id = env.register(MembershipToken, ());
     let client = MembershipTokenClient::new(&env, &contract_id);
 
-    let name = String::from_str(&env, "Oraculum Token");
+    let name = String::from_str(&env, "Pitchin Token");
     let symbol = String::from_str(&env, "MHT");
     let decimals = 8u32;
 
@@ -296,7 +296,7 @@ fn test_transfer_from_with_allowance() {
     let contract_id = env.register(MembershipToken, ());
     let client = MembershipTokenClient::new(&env, &contract_id);
 
-    let name = String::from_str(&env, "Oraculum Token");
+    let name = String::from_str(&env, "Pitchin Token");
     let symbol = String::from_str(&env, "MHT");
     let decimals = 8u32;
 

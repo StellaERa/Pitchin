@@ -12,9 +12,9 @@ afterEach(() => {
 
 describe("resolveApiBaseUrl (FE-02)", () => {
   it("uses the configured URL and trims trailing slashes", () => {
-    vi.stubEnv(API_URL_ENV_VAR, "https://api.oraculum.app/api/");
+    vi.stubEnv(API_URL_ENV_VAR, "https://api.Pitchin.app/api/");
 
-    expect(resolveApiBaseUrl()).toBe("https://api.oraculum.app/api");
+    expect(resolveApiBaseUrl()).toBe("https://api.Pitchin.app/api");
   });
 
   it("keeps local development working through the documented default", () => {
@@ -40,9 +40,9 @@ describe("resolveApiBaseUrl (FE-02)", () => {
   });
 
   it("accepts a configured URL in production", () => {
-    vi.stubEnv(API_URL_ENV_VAR, "https://api.oraculum.app");
+    vi.stubEnv(API_URL_ENV_VAR, "https://api.Pitchin.app");
     vi.stubEnv("NODE_ENV", "production");
 
-    expect(resolveApiBaseUrl()).toBe("https://api.oraculum.app");
+    expect(resolveApiBaseUrl()).toBe("https://api.Pitchin.app");
   });
 });

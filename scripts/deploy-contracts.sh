@@ -2,7 +2,7 @@
 # ------------------------------------------------------------------
 # deploy-contracts.sh
 #
-# Builds and deploys all Oraculum Soroban contracts to the chosen
+# Builds and deploys all Pitchin Soroban contracts to the chosen
 # network.  Records every contract ID in .env format at
 #   scripts/.contract-ids.env
 #

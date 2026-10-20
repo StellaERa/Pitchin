@@ -61,7 +61,7 @@ export class ForgotPasswordProvider {
 
       const frontendBase =
         this.configService.get<string>('FRONTEND_PASSWORD_RESET_URL') ||
-        'https://Oraculum.vercel.app/reset-password?token=';
+        'https://Pitchin.vercel.app/reset-password?token=';
       const resetLink = `${frontendBase}${rawToken}`;
 
       const fullName = `${user.firstname} ${user.lastname}`.trim();

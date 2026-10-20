@@ -1,6 +1,6 @@
-# Oraculum — Frontend
+# Pitchin — Frontend
 
-> Client layer of Oraculum: web marketplace, wallet-embedded mini-app, and CLI. Browse agents, connect a Stellar wallet, query and pay per use — no accounts.
+> Client layer of Pitchin: web marketplace, wallet-embedded mini-app, and CLI. Browse agents, connect a Stellar wallet, query and pay per use — no accounts.
 
 [![Next.js](https://img.shields.io/badge/Next.js-14-black?style=flat-square&logo=next.js)](https://nextjs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue?style=flat-square&logo=typescript)]()
@@ -17,7 +17,7 @@ Covers `apps/web`, `apps/mini-app`, `apps/cli`. See [Root README](../../README.m
 | `apps/mini-app` | Lightweight wallet-embedded experience | Vite + React |
 | `apps/cli` | Terminal client | Node.js, Commander.js |
 
-All three consume [`@oraculum/sdk`](../../packages/sdk/README.md) for queries, payments, and wallet handling — UI stays thin, protocol logic stays in the SDK.
+All three consume [`@Pitchin/sdk`](../../packages/sdk/README.md) for queries, payments, and wallet handling — UI stays thin, protocol logic stays in the SDK.
 
 ---
 
@@ -32,7 +32,7 @@ cp apps/web/.env.example apps/web/.env.local
 
 ```bash
 # .env.local
-NEXT_PUBLIC_ORACULUM_GATEWAY_URL=http://localhost:4000
+NEXT_PUBLIC_Pitchin_GATEWAY_URL=http://localhost:4000
 NEXT_PUBLIC_STELLAR_NETWORK=testnet
 NEXT_PUBLIC_USDC_CONTRACT_ID=CABC...
 NEXT_PUBLIC_AGENT_REGISTRY_CONTRACT_ID=CDEF...
@@ -62,7 +62,7 @@ apps/web/src/
 │   ├── numina/                  # NumerologyForm, ProfileCard, ChatWindow
 │   └── sentry/                  # WalletSearchBar, WhaleAlertFeed
 ├── hooks/                       # useWallet, useAgentQuery, usePaymentFlow
-└── lib/                         # oraculum-client.ts, stellar.ts
+└── lib/                         # Pitchin-client.ts, stellar.ts
 ```
 
 `apps/mini-app` mirrors this with a single-screen flow (`AgentList → QueryScreen → PaymentScreen`). `apps/cli` exposes `agents`, `query`, `chat`, `history` commands.
@@ -94,7 +94,7 @@ await kit.openModal({
 
 ```tsx
 function usePaymentFlow() {
-  const client = useOraculumClient();
+  const client = usePitchinClient();
   const [status, setStatus] = useState<'idle' | 'paying' | 'done' | 'error'>('idle');
 
   async function runQuery(agentId: string, payload: object) {
@@ -150,7 +150,7 @@ npm run build --workspace=apps/web
 
 ### `NEXT_PUBLIC_API_URL` (required in production)
 
-Base URL of the backend API, for example `https://api.oraculum.app`. Trailing
+Base URL of the backend API, for example `https://api.Pitchin.app`. Trailing
 slashes are trimmed.
 
 - **Production:** must be set. A missing value fails fast at startup with a
@@ -167,7 +167,7 @@ NEXT_PUBLIC_API_URL=http://localhost:3001/api
 | Variable | Description |
 |---|---|
 | `NEXT_PUBLIC_API_URL` | Base URL of the backend API (required in production) |
-| `NEXT_PUBLIC_ORACULUM_GATEWAY_URL` | Base URL of the backend Gateway |
+| `NEXT_PUBLIC_Pitchin_GATEWAY_URL` | Base URL of the backend Gateway |
 | `NEXT_PUBLIC_STELLAR_NETWORK` | `testnet` or `mainnet` |
 | `NEXT_PUBLIC_USDC_CONTRACT_ID` | Stellar Asset Contract ID for USDC |
 | `NEXT_PUBLIC_AGENT_REGISTRY_CONTRACT_ID` | Deployed `agent-registry` contract ID |

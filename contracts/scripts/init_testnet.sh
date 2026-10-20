@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================================
-# init_testnet.sh — Initialize deployed Oraculum contracts on testnet
+# init_testnet.sh — Initialize deployed Pitchin contracts on testnet
 # ============================================================================
 #
 # This script initializes each deployed contract with the appropriate admin
@@ -50,7 +50,7 @@ while [[ $# -gt 0 ]]; do
         --help|-h)
             echo "Usage: $0 [--admin <address>] [--network <network>] [--rpc-url <url>]"
             echo ""
-            echo "Initialize deployed Oraculum contracts with admin addresses."
+            echo "Initialize deployed Pitchin contracts with admin addresses."
             echo ""
             echo "Options:"
             echo "  --admin <address>   Admin address for contract initialization"

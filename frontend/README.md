@@ -1,179 +1,67 @@
-# Oraculum — Frontend
+# Pitchin Frontend
 
-> Client layer of Oraculum: web marketplace, wallet-embedded mini-app, and CLI. Browse agents, connect a Stellar wallet, query and pay per use — no accounts.
+The frontend is Pitchin's Next.js web application. It is the user-facing layer for the platform and is being shaped toward the resident and contractor experience for the neighbourhood repair board.
 
-[![Next.js](https://img.shields.io/badge/Next.js-14-black?style=flat-square&logo=next.js)](https://nextjs.org)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue?style=flat-square&logo=typescript)]()
+> **Product status:** The current app includes platform screens for authentication, workspaces, bookings, check-in, dashboards, invoices, notifications, profiles, settings, and administration. The repair-board map, issue reporting, AI triage, pledge and pool views, contractor bidding, wallet flows, and neighbour verification are product targets; do not assume they are already implemented in the app.
 
-Covers `apps/web`, `apps/mini-app`, `apps/cli`. See [Root README](../../README.md) · [Backend](../../packages/gateway/README.md) · [Contracts](../../packages/contracts/README.md).
+## Current Application
 
----
+| Area | Route |
+|---|---|
+| Home | `/` |
+| Authentication | `/(auth)` route group |
+| Workspaces and bookings | `/workspaces`, `/bookings` |
+| Check-in | `/check-in` |
+| Dashboard and administration | `/dashboard`, `/admin` |
+| Account and preferences | `/profile`, `/settings`, `/notifications` |
+| Invoices and contact | `/invoices`, `/contact` |
 
-## What Lives Here
+The application uses Next.js App Router, React, TypeScript, Tailwind CSS, and shared components in `components/`. API requests are handled through the shared client in `lib/apiClient.ts` and use the `NEXT_PUBLIC_API_URL` setting.
 
-| App | Purpose | Stack |
-|---|---|---|
-| `apps/web` | Marketplace UI — browse, query, chat, history | Next.js 14, Tailwind, shadcn/ui |
-| `apps/mini-app` | Lightweight wallet-embedded experience | Vite + React |
-| `apps/cli` | Terminal client | Node.js, Commander.js |
+## Repair-Board Direction
 
-All three consume [`@oraculum/sdk`](../../packages/sdk/README.md) for queries, payments, and wallet handling — UI stays thin, protocol logic stays in the SDK.
+The intended mobile-first experience will let residents discover nearby issues, submit geotagged photos, review triage suggestions, follow pool funding, and pledge through supported Stellar wallets. Contractors will need bid and job workflows, while eligible neighbours will review submitted completion evidence.
 
----
+The UI should make clear that AI suggestions do not release funds. Funding and payout status should come from authoritative API/contract state, and payment success should only be shown after confirmation. These are product requirements for the planned flows, not a claim that the flows currently exist.
 
-## Quick Start
+## Run Locally
+
+Requirements: Node.js 20 or later and a running backend for API-backed screens.
 
 ```bash
-# Prereqs: Node >= 20, a Stellar wallet (Freighter), funded testnet account, gateway running locally
-
+cd frontend
 npm install
-cp apps/web/.env.example apps/web/.env.local
 ```
+
+Set the backend API base URL in `frontend/.env.local`:
 
 ```bash
-# .env.local
-NEXT_PUBLIC_ORACULUM_GATEWAY_URL=http://localhost:4000
-NEXT_PUBLIC_STELLAR_NETWORK=testnet
-NEXT_PUBLIC_USDC_CONTRACT_ID=CABC...
-NEXT_PUBLIC_AGENT_REGISTRY_CONTRACT_ID=CDEF...
-```
-
-```bash
-npm run dev --workspace=apps/web        # → http://localhost:3000
-npm run dev --workspace=apps/mini-app   # → http://localhost:5173
-npm run build --workspace=apps/cli && npm link --workspace=apps/cli
-```
-
----
-
-## Directory Structure
-
-```
-apps/web/src/
-├── app/
-│   ├── marketplace/[agentId]/   # Agent listing + detail pages
-│   ├── sentry/                  # SentryAgent UI
-│   ├── numina/                  # Profile entry, unlock, chat
-│   └── history/                 # Per-wallet query/payment history
-├── components/
-│   ├── wallet/                  # ConnectButton, WalletProvider, BalanceBadge
-│   ├── agents/                  # AgentCard, AgentGrid, PricingTable
-│   ├── payment/                 # PaymentModal (402 → sign → settle)
-│   ├── numina/                  # NumerologyForm, ProfileCard, ChatWindow
-│   └── sentry/                  # WalletSearchBar, WhaleAlertFeed
-├── hooks/                       # useWallet, useAgentQuery, usePaymentFlow
-└── lib/                         # oraculum-client.ts, stellar.ts
-```
-
-`apps/mini-app` mirrors this with a single-screen flow (`AgentList → QueryScreen → PaymentScreen`). `apps/cli` exposes `agents`, `query`, `chat`, `history` commands.
-
----
-
-## Wallet Connection
-
-Uses [Stellar Wallets Kit](https://github.com/Creit-Tech/Stellar-Wallets-Kit) to support Freighter, xBull, Albedo, Lobstr behind one interface. No sign-up step — the connected address is immediately the identity key for queries, history, and payments.
-
-```tsx
-const kit = new StellarWalletsKit({
-  network: WalletNetwork.TESTNET,
-  modules: [new FreighterModule(), new xBullModule()],
-});
-
-await kit.openModal({
-  onWalletSelected: async (option) => {
-    kit.setWallet(option.id);
-    const { address } = await kit.getAddress();
-    return address;
-  },
-});
-```
-
----
-
-## The 402 Payment Flow (Frontend Side)
-
-```tsx
-function usePaymentFlow() {
-  const client = useOraculumClient();
-  const [status, setStatus] = useState<'idle' | 'paying' | 'done' | 'error'>('idle');
-
-  async function runQuery(agentId: string, payload: object) {
-    return client.query(agentId, payload, {
-      onPaymentRequired: async (req) => {
-        setStatus('paying');
-        return client.payments.settle(req); // prompts wallet signature
-      },
-    });
-  }
-  return { runQuery, status };
-}
-```
-
-```tsx
-<UnlockButton
-  label={status === 'paying' ? 'Confirm in wallet...' : 'Unlock for $0.50 USDC'}
-  onClick={() => runQuery('numina-agent', { type: 'full-unlock', profileId })}
-/>
-```
-
-The user only sees a price, a button, and a wallet signature prompt — payment construction and receipt verification are abstracted by the SDK.
-
----
-
-## UI Patterns
-
-**NuminaAgent** — free tier computed client-side (no wallet needed); paid unlock ($0.50 USDC) reveals Personal Year, Pinnacles, Core Challenges, and chat.
-
-**SentryAgent** — free basic wallet summary; paid deep analysis ($0.25 USDC) for whale-pattern detection.
-
----
-
-## Conventions
-
-- No `localStorage`/`sessionStorage` for wallet session state — lives in React context only
-- Query history is always fetched fresh from the Gateway, keyed by wallet address
-- No optimistic UI for payments — wait for on-chain confirmation before showing success
-
----
-
-## Testing & Build
-
-```bash
-npm run test --workspace=apps/web        # Vitest + Testing Library
-npm run test:e2e --workspace=apps/web    # Playwright
-npm run build --workspace=apps/web
-```
-
----
-
-## Environment Variables
-
-### `NEXT_PUBLIC_API_URL` (required in production)
-
-Base URL of the backend API, for example `https://api.oraculum.app`. Trailing
-slashes are trimmed.
-
-- **Production:** must be set. A missing value fails fast at startup with a
-  `ConfigurationError` instead of silently pointing production clients at a
-  developer machine.
-- **Development / test:** when unset, the client falls back to the documented
-  `http://localhost:3000/api` default so the local stack keeps working.
-
-```bash
-# .env.local
 NEXT_PUBLIC_API_URL=http://localhost:3001/api
 ```
 
-| Variable | Description |
-|---|---|
-| `NEXT_PUBLIC_API_URL` | Base URL of the backend API (required in production) |
-| `NEXT_PUBLIC_ORACULUM_GATEWAY_URL` | Base URL of the backend Gateway |
-| `NEXT_PUBLIC_STELLAR_NETWORK` | `testnet` or `mainnet` |
-| `NEXT_PUBLIC_USDC_CONTRACT_ID` | Stellar Asset Contract ID for USDC |
-| `NEXT_PUBLIC_AGENT_REGISTRY_CONTRACT_ID` | Deployed `agent-registry` contract ID |
+Run the backend on port `3001` (or set this URL to the port in use), then start the frontend:
 
----
+```bash
+npm run dev
+```
 
-## Related Docs
+Next.js serves the app at `http://localhost:3000` by default. In development, the API client has a local fallback; configuring the URL explicitly avoids connecting to the wrong service. Production builds require `NEXT_PUBLIC_API_URL` to point to the deployed API.
 
-[Root README](../../README.md) · [Backend](../../packages/gateway/README.md) · [Contracts](../../packages/contracts/README.md) · [SDK](../../packages/sdk/README.md)
+## Test and Build
+
+Run these from `frontend/`:
+
+```bash
+npm test
+npm run test:e2e
+npm run lint
+npm run build
+```
+
+Unit tests use Vitest; end-to-end tests use Playwright.
+
+## Related Components
+
+- [Root README](../README.md): product overview, target user flows, and roadmap.
+- [Backend README](../backend/README.md): API capabilities and local setup.
+- [Contracts README](../contracts/README.md): current Soroban contracts and planned escrow/verification contracts.

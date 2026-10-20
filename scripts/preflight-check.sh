@@ -52,7 +52,7 @@ summary() {
 
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "  Oraculum — Preflight Build Check                      "
+echo "  Pitchin — Preflight Build Check                      "
 echo "  Mode: ${MODE}"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""

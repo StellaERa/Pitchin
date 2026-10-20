@@ -78,7 +78,7 @@ fi
 # Build all workspace members
 # ---------------------------------------------------------------------------
 echo "============================================================================"
-echo "  Building Oraculum contracts (release, wasm32)"
+echo "  Building Pitchin contracts (release, wasm32)"
 echo "============================================================================"
 echo ""
 echo "  Workspace: $WORKSPACE_DIR"

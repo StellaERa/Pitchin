@@ -1,4 +1,4 @@
-//! Upgrade-related error types for the Oraculum contract.
+//! Upgrade-related error types for the Pitchin contract.
 //!
 //! A dedicated `UpgradeError` enum is used because the main `Error` enum is
 //! already at the 50-variant XDR limit imposed by `#[contracterror]`.

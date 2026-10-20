@@ -51,8 +51,8 @@ async function bootstrap() {
           .map((o) => o.trim())
           .filter(Boolean)
       : [
-          'https://Oraculum.vercel.app',
-          'https://www.Oraculum.vercel.app',
+          'https://Pitchin.vercel.app',
+          'https://www.Pitchin.vercel.app',
           'http://localhost:3000',
           'http://localhost:3001',
           'http://localhost:3002',
@@ -99,9 +99,9 @@ async function bootstrap() {
   // auth schemes. The customOptions keep the UI tidy (top-bar collapse,
   // and a banner explaining the bearer-auth requirement).
   const config = new DocumentBuilder()
-    .setTitle('Oraculum API')
+    .setTitle('Pitchin API')
     .setDescription(
-      `REST API for the Oraculum platform.
+      `REST API for the Pitchin platform.
 
 ## API Versioning (BE-25)
 All endpoints are versioned via URI prefix: \`/api/v1/\`, \`/api/v2/\`, etc.
@@ -130,9 +130,9 @@ List endpoints accept \`page\` (default 1) and \`limit\` (default 20, max 100). 
     )
     .setVersion(process.env.npm_package_version ?? '1.0.0')
     .setContact(
-      'Oraculum Engineering',
-      'https://Oraculum.vercel.app',
-      'engineering@oraculum.app',
+      'Pitchin Engineering',
+      'https://Pitchin.vercel.app',
+      'engineering@Pitchin.app',
     )
     .setLicense('UNLICENSED', undefined)
     .addBearerAuth(
@@ -147,13 +147,13 @@ List endpoints accept \`page\` (default 1) and \`limit\` (default 20, max 100). 
       'bearer',
     )
     .addServer('http://localhost:3000', 'Local development')
-    .addServer('https://api.Oraculum.app', 'Production')
+    .addServer('https://api.Pitchin.app', 'Production')
     .build();
 
   const document = SwaggerModule.createDocument(app as any, config);
 
   const ui: SwaggerCustomOptions = {
-    customSiteTitle: 'Oraculum API Docs',
+    customSiteTitle: 'Pitchin API Docs',
     swaggerOptions: {
       persistAuthorization: true,
       docExpansion: 'none',

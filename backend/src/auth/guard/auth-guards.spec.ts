@@ -16,7 +16,7 @@ describe('Authentication & Authorization Guards (#53 BE-45)', () => {
     });
 
     it('should return user when validate request succeeds without error', () => {
-      const user = { id: 'usr_123', email: 'test@oraculum.app' };
+      const user = { id: 'usr_123', email: 'test@Pitchin.app' };
       // handleRequest(err, user, info) is the hook Passport's AuthGuard calls
       // after the JWT strategy runs: no error and a user means success
       const result = guard.handleRequest(null, user, null);

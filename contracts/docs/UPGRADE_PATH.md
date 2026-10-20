@@ -1,7 +1,7 @@
 # Contract Upgrade Path & Migration Strategy
 
 ## Overview
-This document outlines the process for upgrading and migrating Oraculum smart contracts to new versions.
+This document outlines the process for upgrading and migrating Pitchin smart contracts to new versions.
 
 ## Prerequisites
 - Stellar CLI installed

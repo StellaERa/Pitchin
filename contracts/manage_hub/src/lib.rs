@@ -1,5 +1,5 @@
 #![no_std]
-//! # Oraculum Contract
+//! # Pitchin Contract
 //!
 //! ## Multisig Integration for Critical Operations
 //!

@@ -100,8 +100,8 @@ const EmailResetPassword = ({ onTogglePage }: EmailResetPasswordProps) => {
       <Alert icon={<Info />} title="Need help?">
         If you are having trouble accessing your account, comtact our support
         team at{" "}
-        <Link href="mailto:support@Oraculum.com" className="underline">
-          support@Oraculum.com
+        <Link href="mailto:support@Pitchin.com" className="underline">
+          support@Pitchin.com
         </Link>
       </Alert>
     </>

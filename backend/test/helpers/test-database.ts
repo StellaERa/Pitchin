@@ -48,8 +48,8 @@ export class TestDatabaseHelper {
   async createTestWorkspace(ownerId: string, override = {}) {
     return this.prisma.workspace.create({
       data: {
-        name: 'Oraculum Test Hub',
-        slug: `oraculum-${Date.now()}`,
+        name: 'Pitchin Test Hub',
+        slug: `Pitchin-${Date.now()}`,
         ownerId,
         hourlyRateCents: 5000, // $50.00/hr
         ...override,

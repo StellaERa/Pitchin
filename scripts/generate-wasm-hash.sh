@@ -56,7 +56,7 @@ fi
 
 cd "${WORKSPACE_DIR}"
 
-echo "━━━ Oraculum — Deterministic Wasm Hash Generator ━━━━━━━━"
+echo "━━━ Pitchin — Deterministic Wasm Hash Generator ━━━━━━━━"
 echo "  Workspace: ${WORKSPACE_DIR}"
 echo "  Hash file: ${HASH_FILE}"
 if [ "$HAS_PYTHON" = false ]; then

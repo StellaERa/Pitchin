@@ -41,11 +41,11 @@ describe('NotificationService Template & Delivery Tests (#58 BE-49)', () => {
       const rendered = service.renderTemplate(NotificationEventType.PAYMENT_FAILED, {
         userName: 'Jordan',
         invoiceId: 'INV-9921',
-        retryUrl: 'https://oraculum.app/pay/INV-9921',
+        retryUrl: 'https://Pitchin.app/pay/INV-9921',
       });
 
       expect(rendered.subject).toContain('INV-9921');
-      expect(rendered.html).toContain('https://oraculum.app/pay/INV-9921');
+      expect(rendered.html).toContain('https://Pitchin.app/pay/INV-9921');
     });
 
     it('should throw BadRequestException when required template variables are missing', () => {
@@ -68,7 +68,7 @@ describe('NotificationService Template & Delivery Tests (#58 BE-49)', () => {
         {
           inviterName: 'Sarah',
           workspaceName: 'Innovate Hub',
-          inviteUrl: 'https://oraculum.app/invite/token123',
+          inviteUrl: 'https://Pitchin.app/invite/token123',
         },
       );
 
@@ -76,7 +76,7 @@ describe('NotificationService Template & Delivery Tests (#58 BE-49)', () => {
       expect(emailService.sendEmail).toHaveBeenCalledWith({
         to: 'user@example.com',
         subject: "You've been invited to join Innovate Hub",
-        html: expect.stringContaining('https://oraculum.app/invite/token123'),
+        html: expect.stringContaining('https://Pitchin.app/invite/token123'),
       });
     });
 
@@ -87,7 +87,7 @@ describe('NotificationService Template & Delivery Tests (#58 BE-49)', () => {
         {
           userName: 'Jordan',
           invoiceId: 'INV-100',
-          retryUrl: 'https://oraculum.app/pay',
+          retryUrl: 'https://Pitchin.app/pay',
         },
       );
 

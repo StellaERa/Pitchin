@@ -1,7 +1,7 @@
 #!/usr/bin/env pwsh
 <#
 .SYNOPSIS
-    Code-coverage runner for Oraculum contracts (Windows / PowerShell).
+    Code-coverage runner for Pitchin contracts (Windows / PowerShell).
 .DESCRIPTION
     Generates coverage reports for the Rust contract workspace using
     cargo-tarpaulin (preferred) or grcov.
@@ -25,7 +25,7 @@ $WorkspaceDir = Split-Path -Path $PSScriptRoot -Parent
 $ReportDir = Join-Path -Path $WorkspaceDir -ChildPath "target/coverage"
 New-Item -ItemType Directory -Force -Path $ReportDir | Out-Null
 
-Write-Host "━━━ Oraculum Coverage Report ━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Cyan
+Write-Host "━━━ Pitchin Coverage Report ━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Cyan
 Write-Host "  Engine:   $Engine"
 Write-Host "  Contracts: $((Join-Path $WorkspaceDir 'contracts'))"
 Write-Host ""

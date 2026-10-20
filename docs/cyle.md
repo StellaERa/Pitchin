@@ -1,4 +1,4 @@
-# Oraculum
+# Pitchin
 
 > **A pay-per-query AI agent marketplace on Stellar** — autonomous intelligence agents (market analysts, life consultants, on-chain watchers) that anyone can query instantly, paying only in USDC, with zero accounts and persistent memory tied to your wallet.
 
@@ -8,11 +8,11 @@
 [![Status](https://img.shields.io/badge/Status-Active%20Development-green?style=flat-square)]()
 
 ---..
-## What is Oraculum?
+## What is Pitchin?
 
 **CeloSense** proved an AI agent can monitor on-chain activity and sell insights pay-per-query. **Numina AI** proved a pay-per-use AI consultant — no account, just a wallet and USDC — can deliver deeply personal value..
 
-**Oraculum unifies both into one protocol**: an open marketplace of autonomous AI Oracle Agents on Stellar, sharing common primitives:
+**Pitchin unifies both into one protocol**: an open marketplace of autonomous AI Oracle Agents on Stellar, sharing common primitives:
 
 - **Pay-per-query micropayments** in USDC, settled instantly via `x402-soroban`
 - **Wallet-native identity** — no sign-up, your Stellar address *is* your account
@@ -55,7 +55,7 @@ GET /agents/whale-watch/query
 Client (Web / Mini-App / CLI)
         │
         ▼
-Oraculum Gateway  →  x402 payment middleware, auth-by-wallet, agent routing
+Pitchin Gateway  →  x402 payment middleware, auth-by-wallet, agent routing
         │                              │
         ▼                              ▼
 Agent Runtime               Stellar Ledger (Soroban)
@@ -74,7 +74,7 @@ Full diagrams and per-layer detail live in the layer READMEs linked below.
 ## Monorepo Structure
 
 ```
-oraculum/
+Pitchin/
 ├── packages/
 │   ├── contracts/        # Soroban smart contracts (Rust) — see Contracts README
 │   ├── agent-runtime/     # Shared agent framework (TypeScript)
@@ -104,8 +104,8 @@ oraculum/
 ## Getting Started
 
 ```bash
-git clone https://github.com/your-org/oraculum.git
-cd oraculum
+git clone https://github.com/your-org/Pitchin.git
+cd Pitchin
 npm install
 cp .env.example .env   # add Stellar testnet keys
 
@@ -144,9 +144,9 @@ Enter a name and birthday for an instant free numerology profile (Life Path, Day
 ## SDK Quick Example
 
 ```typescript
-import { OraculumClient } from '@oraculum/sdk';
+import { PitchinClient } from '@Pitchin/sdk';
 
-const client = new OraculumClient({ network: 'testnet', keypair });
+const client = new PitchinClient({ network: 'testnet', keypair });
 
 const profile = await client.query('numina-agent', {
   type: 'basic-profile', name: 'Ada Lovelace', birthday: '1815-12-10',
@@ -193,7 +193,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) and [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.
 
 ## Security
 
-Do not open public issues for vulnerabilities. Email `security@oraculum.xyz` — we respond within 48 hours.
+Do not open public issues for vulnerabilities. Email `security@Pitchin.xyz` — we respond within 48 hours.
 
 ## License
 
@@ -207,6 +207,6 @@ Built on [Stellar](https://stellar.org) and Soroban. Inspired by **CeloSense** (
 
 <div align="center">
 
-*Oraculum — Ask Anything. Pay Only For What You Use.*
+*Pitchin — Ask Anything. Pay Only For What You Use.*
 
 </div>

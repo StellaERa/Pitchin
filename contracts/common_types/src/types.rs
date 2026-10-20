@@ -1,7 +1,7 @@
-//! Common types used across Oraculum contracts.
+//! Common types used across Pitchin contracts.
 //!
 //! This module provides shared enums and structs to ensure consistency
-//! across all Oraculum smart contracts, including subscription management,
+//! across all Pitchin smart contracts, including subscription management,
 //! attendance tracking, and user role definitions.
 
 use soroban_sdk::{contracttype, Address, Map, String, Vec};
@@ -144,7 +144,7 @@ pub struct MetadataUpdate {
 // Existing Types
 // ============================================================================
 
-/// Subscription plan types available in Oraculum.
+/// Subscription plan types available in Pitchin.
 ///
 /// Defines the different billing frequencies for subscriptions.
 ///
@@ -180,7 +180,7 @@ pub enum AttendanceAction {
     ClockOut,
 }
 
-/// User role types in the Oraculum system.
+/// User role types in the Pitchin system.
 ///
 /// Defines the different permission levels and user types
 /// within the platform.
@@ -206,7 +206,7 @@ pub enum UserRole {
 /// Membership status types.
 ///
 /// Tracks the current state of a user's membership.
-/// Includes all status variants used across Oraculum contracts.
+/// Includes all status variants used across Pitchin contracts.
 ///
 /// # Variants
 /// * `Active` - Membership is currently active
