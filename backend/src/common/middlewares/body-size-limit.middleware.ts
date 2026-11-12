@@ -20,6 +20,12 @@ export class BodySizeLimitMiddleware implements NestMiddleware {
   }
 
   private sanitizeString(input: string): string {
-    return input.replace(/[<script>]/gi, '').trim();
+    // Strip <script> blocks, then any stray opening/closing script tag. The
+    // previous character class `[<script>]` deleted every s/c/r/i/p/t letter
+    // from the payload instead of removing tags.
+    return input
+      .replace(/<script\b[^>]*>[\s\S]*?<\/script\s*>/gi, '')
+      .replace(/<\/?script\b[^>]*>/gi, '')
+      .trim();
   }
 }
