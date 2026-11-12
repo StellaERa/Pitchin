@@ -42,7 +42,18 @@ export const storage = {
   getUser(): User | null {
     if (typeof window === "undefined") return null;
     const user = localStorage.getItem(AUTH_USER_KEY);
-    return user ? (JSON.parse(user) as User) : null;
+    if (!user) return null;
+
+    // localStorage can hold truncated or hand-edited values (and it outlives
+    // deploys). A parse failure must log the user out cleanly rather than
+    // throwing during app bootstrap.
+    try {
+      const parsed: unknown = JSON.parse(user);
+      return parsed && typeof parsed === "object" ? (parsed as User) : null;
+    } catch {
+      localStorage.removeItem(AUTH_USER_KEY);
+      return null;
+    }
   },
 
   setUser(user: unknown): void {
