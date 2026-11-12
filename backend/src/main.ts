@@ -24,8 +24,12 @@ async function bootstrap() {
   // Correlation-ID middleware MUST be registered before any logger or
   // pipe so the AsyncLocalStorage context is opened for the rest of
   // the request lifecycle (BE-08).
-  app.use(new CorrelationIdMiddleware().use);
-  app.use(new HttpLogger().use);
+  // Middleware methods use `this`, so they must stay bound to their instance
+  // when passed to Express; an unbound reference throws on the first request.
+  const correlationIdMiddleware = new CorrelationIdMiddleware();
+  app.use(correlationIdMiddleware.use.bind(correlationIdMiddleware));
+  const httpLogger = new HttpLogger();
+  app.use(httpLogger.use.bind(httpLogger));
 
   // GLOBAL VALIDATION — replaced by the centralised pipe so every
   // controller shares the same 400 error shape (BE-01).
@@ -84,7 +88,8 @@ async function bootstrap() {
   });
 
   // API VERSION HEADER MIDDLEWARE
-  app.use(new ApiVersionMiddleware().use);
+  const apiVersionMiddleware = new ApiVersionMiddleware();
+  app.use(apiVersionMiddleware.use.bind(apiVersionMiddleware));
 
   // GLOBAL PREFIX — must be set AFTER enableVersioning so NestJS
   // places the version segment between /api and the controller route.
