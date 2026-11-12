@@ -46,6 +46,20 @@ export const PLAN_MAX_DAYS: Record<PlanType, number> = {
   YEARLY: 366,
 };
 
+/**
+ * Today as `YYYY-MM-DD` in the user's own timezone.
+ *
+ * `toISOString()` reports the UTC date, which is already tomorrow for users
+ * east of UTC late in the evening — that would reject a booking starting
+ * "today" as being in the past.
+ */
+export function localToday(now: Date = new Date()): string {
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
 function toUtcDay(value: string): number | null {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
   const timestamp = Date.parse(`${value}T00:00:00Z`);
@@ -69,7 +83,7 @@ export function validateBookingDates({
   startDate,
   endDate,
   planType,
-  today = new Date().toISOString().split("T")[0],
+  today = localToday(),
 }: BookingDateRangeInput): BookingFieldErrors {
   const errors: BookingFieldErrors = {};
 

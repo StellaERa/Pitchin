@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   inclusiveDaySpan,
+  localToday,
   validateBookingDates,
 } from "./bookingValidation";
 
@@ -16,6 +17,14 @@ describe("inclusiveDaySpan", () => {
     expect(inclusiveDaySpan("", "2026-10-21")).toBeNull();
     expect(inclusiveDaySpan("2026-10-15", "not-a-date")).toBeNull();
     expect(inclusiveDaySpan("2026-10-15T10:00:00Z", "2026-10-21")).toBeNull();
+  });
+});
+
+describe("localToday", () => {
+  it("uses the local calendar day, not the UTC day", () => {
+    // 23:30 local on 29 Aug; in any timezone this Date object represents a
+    // local wall-clock time, so the local date must be the 29th.
+    expect(localToday(new Date(2026, 7, 29, 23, 30))).toBe("2026-08-29");
   });
 });
 
