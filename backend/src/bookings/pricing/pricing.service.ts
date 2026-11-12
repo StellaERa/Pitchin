@@ -59,6 +59,12 @@ export class PricingService {
     if (planType === PlanType.DAILY) {
       const start = new Date(startDate);
       const end = new Date(endDate);
+      if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+        throw new Error('Invalid booking dates');
+      }
+      if (end.getTime() < start.getTime()) {
+        throw new Error('End date cannot be before the start date');
+      }
       const diffMs = end.getTime() - start.getTime();
       days = Math.max(1, Math.ceil(diffMs / (1000 * 60 * 60 * 24)));
     } else {

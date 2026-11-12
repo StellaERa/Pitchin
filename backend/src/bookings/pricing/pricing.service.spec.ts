@@ -72,6 +72,18 @@ describe('PricingService', () => {
       expect(amount).toBe(Math.floor(gross * (1 - 0.05)));
     });
 
+    it('rejects unparseable dates for a DAILY booking', () => {
+      expect(() =>
+        service.calculateAmount(1000, PlanType.DAILY, 1, 'not-a-date', '2026-01-02'),
+      ).toThrow('Invalid booking dates');
+    });
+
+    it('rejects a DAILY range whose end precedes its start', () => {
+      expect(() =>
+        service.calculateAmount(1000, PlanType.DAILY, 1, '2026-01-05', '2026-01-01'),
+      ).toThrow('End date cannot be before the start date');
+    });
+
     it('uses fixed plan days regardless of date range for non-DAILY plans', () => {
       const amount = service.calculateAmount(
         1000,
