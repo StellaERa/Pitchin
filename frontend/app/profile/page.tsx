@@ -56,7 +56,13 @@ export default function ProfilePage() {
     setSaving(true);
     setMessage(null);
     try {
-      await apiClient.patch(`/users/${user.id}`, data);
+      const updated = await apiClient.patch<typeof user>(
+        `/users/${user.id}`,
+        data
+      );
+      // Re-hydrate the store from the server's response; initializeAuth()
+      // alone only re-read the now-stale persisted copy.
+      storage.setUser(updated);
       setMessage({ type: "success", text: "Profile updated." });
       initializeAuth();
     } catch (err) {
