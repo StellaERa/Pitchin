@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { HealthService } from './health.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
+import { User } from '../users/entities/user.entity';
 
 const mockRepo = { query: jest.fn() };
 const mockConfig = { get: jest.fn() };
@@ -13,7 +14,7 @@ describe('HealthService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         HealthService,
-        { provide: getRepositoryToken('User'), useValue: mockRepo },
+        { provide: getRepositoryToken(User), useValue: mockRepo },
         { provide: ConfigService, useValue: mockConfig },
       ],
     }).compile();
@@ -37,7 +38,8 @@ describe('HealthService', () => {
     mockRepo.query.mockRejectedValue(new Error('Connection refused'));
     const result = await service.checkDatabase();
     expect(result.status).toBe('unhealthy');
-    expect(result.error).toBe('Connection refused');
+    // The health endpoint must not leak the underlying driver error.
+    expect(result.error).toBe('Database health check unavailable');
   });
 
   it('check() result includes database key', async () => {

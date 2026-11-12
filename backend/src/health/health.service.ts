@@ -4,15 +4,16 @@ import { Repository } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import { v2 as cloudinary } from 'cloudinary';
+import { User } from '../users/entities/user.entity';
 
-interface HealthCheckResult {
+export interface HealthCheckResult {
   status: 'healthy' | 'unhealthy';
   latencyMs: number;
   details?: Record<string, unknown>;
   error?: string;
 }
 
-interface OverallHealthResponse {
+export interface OverallHealthResponse {
   status: 'healthy' | 'unhealthy';
   timestamp: string;
   uptime: number;
@@ -29,8 +30,10 @@ export class HealthService {
   private readonly logger = new Logger(HealthService.name);
 
   constructor(
-    @InjectRepository('User')
-    private readonly userRepo: Repository<any>,
+    // Must match the token registered by TypeOrmModule.forFeature([User]) in
+    // HealthModule; the string token 'User' never resolves at startup.
+    @InjectRepository(User)
+    private readonly userRepo: Repository<User>,
     private readonly configService: ConfigService,
   ) {}
 
