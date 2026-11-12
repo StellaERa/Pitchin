@@ -201,7 +201,21 @@ export const useAuthStore = create<AuthStore>()(
               accessToken,
               isAuthenticated: true,
             });
+            return;
           }
+
+          // A half-restored session (token without a user, or the reverse) is
+          // unusable: the middleware would let the token through while the UI
+          // has no profile. Clear it so the user signs in cleanly.
+          if (accessToken || user) {
+            storage.clear();
+          }
+
+          set({
+            user: null,
+            accessToken: null,
+            isAuthenticated: false,
+          });
         },
         clearAuth: () => {
           set({
