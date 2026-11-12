@@ -37,7 +37,9 @@ export const useAuthRedirect = (options: AuthRedirectOptions = {}): AuthRedirect
   const {
     requireAuth = false,
     requiredRole,
-    redirectTo = '/auth/login',
+    // The App Router serves the sign-in page at /login (see middleware.ts);
+    // /auth/login does not exist and would redirect users to a 404.
+    redirectTo = '/login',
     redirectIfAuthenticated
   } = options;
 
