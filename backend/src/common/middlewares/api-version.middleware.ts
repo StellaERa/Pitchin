@@ -16,8 +16,19 @@ export const SUNSET_DATE = '2027-01-01';
 @Injectable()
 export class ApiVersionMiddleware implements NestMiddleware {
   use(req: Request, res: Response, next: NextFunction): void {
-    const version =
-      (req.params?.version as string) ?? CURRENT_API_VERSION;
+    const version = this.resolveVersion(req);
+
+    // The URI carries the version (e.g. /api/v1/issues). Serving an unknown
+    // version silently as the default would let a client believe it is talking
+    // to an API that does not exist, so reject it explicitly.
+    if (!this.isKnownVersion(version)) {
+      res.status(400).json({
+        statusCode: 400,
+        error: 'Bad Request',
+        message: `Unsupported API version "${version}". Supported versions: ${SUPPORTED_API_VERSIONS.join(', ')}`,
+      });
+      return;
+    }
 
     res.setHeader('X-API-Version', version);
     res.setHeader(
@@ -35,5 +46,27 @@ export class ApiVersionMiddleware implements NestMiddleware {
     }
 
     next();
+  }
+
+  /**
+   * Middleware runs before routing, so `req.params` is normally empty here;
+   * the version therefore has to come from the URL. The route param is still
+   * honoured when present (for versioned routers and tests).
+   */
+  private resolveVersion(req: Request): string {
+    const fromParams = req.params?.version;
+    if (typeof fromParams === 'string' && fromParams.length > 0) {
+      return fromParams;
+    }
+
+    const path = req.path ?? req.url ?? '';
+    return /\/v(\d+)(?:\/|$)/.exec(path)?.[1] ?? CURRENT_API_VERSION;
+  }
+
+  private isKnownVersion(version: string): boolean {
+    return (
+      (SUPPORTED_API_VERSIONS as readonly string[]).includes(version) ||
+      DEPRECATED_API_VERSIONS.includes(version)
+    );
   }
 }

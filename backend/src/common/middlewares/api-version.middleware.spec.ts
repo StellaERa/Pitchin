@@ -19,6 +19,33 @@ describe('ApiVersionMiddleware', () => {
     nextFn = jest.fn();
   });
 
+  it('reads the version from the URL when running before routing', () => {
+    req.params = {};
+    req.path = '/api/v1/bookings';
+
+    middleware.use(req, res, nextFn);
+
+    expect(res.setHeader).toHaveBeenCalledWith('X-API-Version', '1');
+    expect(nextFn).toHaveBeenCalled();
+  });
+
+  it('rejects an unsupported version instead of silently serving v1', () => {
+    const status = jest.fn().mockReturnThis();
+    const json = jest.fn();
+    res.status = status;
+    res.json = json;
+    req.params = {};
+    req.path = '/api/v2/bookings';
+
+    middleware.use(req, res, nextFn);
+
+    expect(status).toHaveBeenCalledWith(400);
+    expect(json).toHaveBeenCalledWith(
+      expect.objectContaining({ statusCode: 400 }),
+    );
+    expect(nextFn).not.toHaveBeenCalled();
+  });
+
   it('sets X-API-Version header from route param', () => {
     req.params.version = '1';
     middleware.use(req, res, nextFn);
