@@ -1,43 +1,78 @@
 import { runInTransaction } from './run-in-transaction';
 
-interface FakeManager {
-  invoked: boolean;
+interface FakeQueryRunner {
+  connect: jest.Mock;
+  startTransaction: jest.Mock;
+  commitTransaction: jest.Mock;
+  rollbackTransaction: jest.Mock;
+  release: jest.Mock;
+  manager: object;
 }
 
-interface FakeDataSource {
-  transaction: jest.Mock;
+function createQueryRunner(
+  overrides: Partial<FakeQueryRunner> = {},
+): FakeQueryRunner {
+  return {
+    connect: jest.fn().mockResolvedValue(undefined),
+    startTransaction: jest.fn().mockResolvedValue(undefined),
+    commitTransaction: jest.fn().mockResolvedValue(undefined),
+    rollbackTransaction: jest.fn().mockResolvedValue(undefined),
+    release: jest.fn().mockResolvedValue(undefined),
+    manager: {},
+    ...overrides,
+  };
 }
+
+const dataSourceFor = (runner: FakeQueryRunner) =>
+  ({ createQueryRunner: () => runner }) as never;
 
 describe('runInTransaction', () => {
-  it('returns the value produced by the unit of work', async () => {
-    const ds: FakeDataSource = {
-      transaction: jest.fn(
-        async (work: (manager: FakeManager) => Promise<unknown>) => {
-          const manager: FakeManager = { invoked: false };
-          return work(manager);
-        },
-      ),
-    };
+  it('returns the value produced by the unit of work and commits', async () => {
+    const runner = createQueryRunner();
 
-    const result = await runInTransaction(ds as never, async (manager) => {
-      (manager as unknown as FakeManager).invoked = true;
-      return 42;
-    });
+    const result = await runInTransaction(
+      dataSourceFor(runner),
+      async () => 42,
+    );
 
     expect(result).toBe(42);
-    expect(ds.transaction).toHaveBeenCalledTimes(1);
+    expect(runner.commitTransaction).toHaveBeenCalledTimes(1);
+    expect(runner.release).toHaveBeenCalledTimes(1);
   });
 
-  it('propagates errors thrown by the unit of work', async () => {
-    const ds: FakeDataSource = {
-      transaction: jest.fn(async () => {
-        // Simulate TypeORM rolling back and re-throwing on error.
-        throw new Error('boom');
-      }),
-    };
+  it('rolls back and rethrows the original error', async () => {
+    const runner = createQueryRunner();
 
     await expect(
-      runInTransaction(ds as never, async () => undefined),
+      runInTransaction(dataSourceFor(runner), async () => {
+        throw new Error('boom');
+      }),
     ).rejects.toThrow('boom');
+
+    expect(runner.rollbackTransaction).toHaveBeenCalledTimes(1);
+    expect(runner.commitTransaction).not.toHaveBeenCalled();
+    expect(runner.release).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not let a failed release mask a successful result', async () => {
+    const runner = createQueryRunner({
+      release: jest.fn().mockRejectedValue(new Error('pool closed')),
+    });
+
+    await expect(
+      runInTransaction(dataSourceFor(runner), async () => 'saved'),
+    ).resolves.toBe('saved');
+  });
+
+  it('does not let a failed release mask the operation error', async () => {
+    const runner = createQueryRunner({
+      release: jest.fn().mockRejectedValue(new Error('pool closed')),
+    });
+
+    await expect(
+      runInTransaction(dataSourceFor(runner), async () => {
+        throw new Error('original failure');
+      }),
+    ).rejects.toThrow('original failure');
   });
 });

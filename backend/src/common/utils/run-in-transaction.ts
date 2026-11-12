@@ -42,6 +42,18 @@ export async function runInTransaction<T>(
     }
     throw error;
   } finally {
-    await queryRunner.release();
+    try {
+      await queryRunner.release();
+    } catch (releaseError) {
+      // A failed release must not replace the operation's result (or its
+      // original error) with a connection-pool implementation detail.
+      logger.error(
+        `Query runner release failed: ${
+          releaseError instanceof Error
+            ? releaseError.message
+            : String(releaseError)
+        }`,
+      );
+    }
   }
 }
