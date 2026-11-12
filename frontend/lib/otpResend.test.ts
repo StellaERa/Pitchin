@@ -54,6 +54,14 @@ describe("otpResendReducer (FE-06)", () => {
     );
   });
 
+  it("does not get stuck in a zero-second cooldown", () => {
+    const state = succeed(initialOtpResendState, 0);
+
+    expect(state.status).toBe("idle");
+    expect(state.announcement).toBe(SENT_ANNOUNCEMENT);
+    expect(canRequestOtpResend(state)).toBe(true);
+  });
+
   it("ignores requests during the cooldown", () => {
     const cooling = succeed(initialOtpResendState, 5);
 

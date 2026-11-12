@@ -53,9 +53,22 @@ export function otpResendReducer(
     }
 
     case "succeeded": {
+      const cooldownSeconds =
+        event.cooldownSeconds ?? DEFAULT_RESEND_COOLDOWN_SECONDS;
+
+      // A server that does not require a cooldown (or sends a negative one)
+      // must not leave the control stuck at "Resend code in 0s".
+      if (cooldownSeconds <= 0) {
+        return {
+          status: "idle",
+          secondsRemaining: 0,
+          announcement: SENT_ANNOUNCEMENT,
+        };
+      }
+
       return {
         status: "cooldown",
-        secondsRemaining: event.cooldownSeconds ?? DEFAULT_RESEND_COOLDOWN_SECONDS,
+        secondsRemaining: cooldownSeconds,
         announcement: SENT_ANNOUNCEMENT,
       };
     }
