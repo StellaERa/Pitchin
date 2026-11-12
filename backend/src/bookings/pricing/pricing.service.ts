@@ -49,9 +49,9 @@ export class PricingService {
       throw new Error('Seat count cannot be negative');
     }
 
-    const discount = PLAN_DISCOUNT[planType];
-    if (discount < 0) {
-      throw new Error('Discount cannot be negative');
+    const discountPct = PLAN_DISCOUNT_PCT[planType];
+    if (discountPct < 0 || discountPct > 100) {
+      throw new Error('Discount must be between 0 and 100 percent');
     }
 
     let days: number;
@@ -66,8 +66,6 @@ export class PricingService {
     }
 
     const gross = hourlyRateKobo * PLAN_WORKING_HOURS * days * seatCount;
-    return Math.floor(gross * (1 - discount));
-    const discountPct = PLAN_DISCOUNT_PCT[planType];
     return Math.floor((gross * (100 - discountPct)) / 100);
   }
 
