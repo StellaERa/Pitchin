@@ -314,9 +314,17 @@ class ApiClient {
     const { skipAuthRefresh, ...init } = options;
     const url = `${this.baseURL}${endpoint}`;
     const headers: Record<string, string> = {
-      "Content-Type": "application/json",
       ...(init.headers as Record<string, string> | undefined),
     };
+    // Only declare a JSON body when one is actually being sent. A GET or
+    // DELETE with Content-Type: application/json triggers a needless CORS
+    // preflight, and a FormData body must keep the browser's boundary header.
+    const hasContentType = Object.keys(headers).some(
+      (name) => name.toLowerCase() === "content-type"
+    );
+    if (init.body !== undefined && !hasContentType) {
+      headers["Content-Type"] = "application/json";
+    }
     if (this.token) headers["Authorization"] = `Bearer ${this.token}`;
 
     let response: Response;

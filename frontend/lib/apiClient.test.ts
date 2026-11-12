@@ -286,3 +286,26 @@ describe("apiClient 401 refresh flow (FE-03)", () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 });
+
+describe("apiClient request headers", () => {
+  function lastHeaders(): Record<string, string> {
+    const call = fetchMock.mock.calls[fetchMock.mock.calls.length - 1];
+    return (call?.[1] as RequestInit).headers as Record<string, string>;
+  }
+
+  it("does not send a JSON content type on bodyless GET requests", async () => {
+    fetchMock.mockResolvedValueOnce(mockResponse({ jsonBody: {} }));
+
+    await apiClient.get("/workspaces");
+
+    expect(lastHeaders()).not.toHaveProperty("Content-Type");
+  });
+
+  it("sends a JSON content type when a body is present", async () => {
+    fetchMock.mockResolvedValueOnce(mockResponse({ jsonBody: {} }));
+
+    await apiClient.post("/auth/login", { email: "a@b.co" });
+
+    expect(lastHeaders()["Content-Type"]).toBe("application/json");
+  });
+});
