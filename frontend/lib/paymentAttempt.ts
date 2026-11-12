@@ -73,12 +73,16 @@ export function paymentAttemptReducer(
       return { status: "paid", message: CONFIRMED_MESSAGE };
 
     case "failed":
+      // A failure from an earlier attempt must not overwrite a payment the
+      // backend has already confirmed.
+      if (state.status === "paid") return state;
       return {
         status: "failed",
         message: event.message?.trim() || FAILED_MESSAGE,
       };
 
     case "cancelled":
+      if (state.status === "paid") return state;
       return { status: "cancelled", message: CANCELLED_MESSAGE };
 
     case "reset":

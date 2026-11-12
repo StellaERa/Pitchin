@@ -71,6 +71,16 @@ describe("paymentAttemptReducer (FE-09)", () => {
     expect(paymentAttemptReducer(paid, { type: "initialize" })).toBe(paid);
   });
 
+  it.each([
+    ["failed", { type: "failed" as const }],
+    ["cancelled", { type: "cancelled" as const }],
+  ])("does not overwrite a confirmed payment with a %s event", (_, event) => {
+    const paid = go(initialPaymentAttemptState, { type: "confirmed" });
+
+    expect(paymentAttemptReducer(paid, event)).toBe(paid);
+    expect(isPaymentConfirmed(paid)).toBe(true);
+  });
+
   it("allows a new attempt to initialise after a failure", () => {
     const failed = paymentAttemptReducer(initialPaymentAttemptState, {
       type: "failed",
