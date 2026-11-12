@@ -35,6 +35,40 @@ function stripTrailingSlashes(value: string): string {
 }
 
 /**
+ * Rejects values that cannot be used as a base URL. Without this, a typo such
+ * as `localhost:3000` (no scheme) or an `ftp://` URL is accepted at build time
+ * and every request fails later with an opaque network error.
+ */
+function validateConfiguredUrl(value: string): string {
+  const normalized = stripTrailingSlashes(value);
+
+  // `new URL("localhost:3000")` succeeds as an opaque `localhost:` URL, so
+  // check for an explicit scheme separator before parsing.
+  if (!/^[a-z][a-z0-9+.-]*:\/\//i.test(normalized)) {
+    throw new ConfigurationError(
+      `${API_URL_ENV_VAR} must be an absolute URL (for example https://api.Pitchin.app), received "${value}".`
+    );
+  }
+
+  let parsed: URL;
+  try {
+    parsed = new URL(normalized);
+  } catch {
+    throw new ConfigurationError(
+      `${API_URL_ENV_VAR} must be an absolute URL (for example https://api.Pitchin.app), received "${value}".`
+    );
+  }
+
+  if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+    throw new ConfigurationError(
+      `${API_URL_ENV_VAR} must use http or https, received "${parsed.protocol}".`
+    );
+  }
+
+  return normalized;
+}
+
+/**
  * Resolves the backend API base URL.
  *
  * - a configured value always wins (trailing slashes are trimmed),
@@ -46,7 +80,7 @@ export function resolveApiBaseUrl(): string {
   const configured = process.env.NEXT_PUBLIC_API_URL?.trim();
 
   if (configured) {
-    return stripTrailingSlashes(configured);
+    return validateConfiguredUrl(configured);
   }
 
   if (process.env.NODE_ENV !== "production") {

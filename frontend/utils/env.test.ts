@@ -39,6 +39,20 @@ describe("resolveApiBaseUrl (FE-02)", () => {
     expect(() => resolveApiBaseUrl()).toThrow(/NEXT_PUBLIC_API_URL is not set/);
   });
 
+  it("rejects a relative or scheme-less URL", () => {
+    vi.stubEnv(API_URL_ENV_VAR, "localhost:3000/api");
+
+    expect(() => resolveApiBaseUrl()).toThrow(ConfigurationError);
+    expect(() => resolveApiBaseUrl()).toThrow(/absolute URL/);
+  });
+
+  it("rejects a non-http(s) protocol", () => {
+    vi.stubEnv(API_URL_ENV_VAR, "ftp://api.Pitchin.app");
+
+    expect(() => resolveApiBaseUrl()).toThrow(ConfigurationError);
+    expect(() => resolveApiBaseUrl()).toThrow(/http or https/);
+  });
+
   it("accepts a configured URL in production", () => {
     vi.stubEnv(API_URL_ENV_VAR, "https://api.Pitchin.app");
     vi.stubEnv("NODE_ENV", "production");
