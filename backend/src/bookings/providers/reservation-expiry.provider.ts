@@ -26,16 +26,16 @@ export class ReservationExpiryHandler {
   @Cron(CronExpression.EVERY_30_MINUTES)
   async expireStaleReservations(): Promise<void> {
     const boundary = new Date(Date.now() - 30 * 60 * 1000);
-    const staleReservations = await this.bookingsRepository.find({
-      where: { status: BookingStatus.PENDING, createdAt: LessThan(boundary) },
-    });
-    if (staleReservations.length === 0) return;
 
-    staleReservations.forEach((booking) => {
-      booking.status = BookingStatus.CANCELLED;
-    });
-    await this.bookingsRepository.save(staleReservations);
+    // A single conditional UPDATE keeps the sweep atomic and avoids loading
+    // every stale booking into memory just to change one column.
+    const result = await this.bookingsRepository.update(
+      { status: BookingStatus.PENDING, createdAt: LessThan(boundary) },
+      { status: BookingStatus.CANCELLED },
+    );
+    const expired = result.affected ?? 0;
+    if (expired === 0) return;
 
-    this.logger.log(`Expired ${staleReservations.length} stale reservation(s)`);
+    this.logger.log(`Expired ${expired} stale reservation(s)`);
   }
 }
