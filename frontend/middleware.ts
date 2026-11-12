@@ -20,7 +20,12 @@ export function middleware(request: NextRequest) {
   // components cannot disagree about it.
   if (isProtectedPath(pathname) && !token) {
     const loginUrl = new URL("/login", request.url);
-    loginUrl.searchParams.set("redirect", pathname);
+    // Keep the query string too (filters, pagination), otherwise the user
+    // returns to a different page than the one they tried to open.
+    loginUrl.searchParams.set(
+      "redirect",
+      `${pathname}${request.nextUrl.search}`
+    );
     return NextResponse.redirect(loginUrl);
   }
 
