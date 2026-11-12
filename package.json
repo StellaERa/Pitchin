@@ -1,1 +1,10 @@
-{"name":"dashboard-a51y-fix","version":"1.0.0","scripts":{"start":"node server.js"},"icense":"MIT"}
+{
+  "name": "pitchin",
+  "version": "1.0.0",
+  "description": "Neighbourhood repair platform: NestJS backend, Next.js app and Soroban contracts",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "start": "node server.js"
+  }
+}
