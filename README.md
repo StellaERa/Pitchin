@@ -434,7 +434,7 @@ Full details are in `docs/SECURITY_MODEL.md`.
 
 ### Prerequisites
 - Node.js 20 or later
-- pnpm 9 or later
+- npm 10 or later
 - Rust stable and the Stellar CLI
 - A funded Stellar Testnet account (`stellar keys generate --fund`)
 - Optional: vision model API key for `@pitchin/triage`
@@ -446,32 +446,33 @@ cargo install --locked stellar-cli
 
 ### Install
 ```bash
-git clone https://github.com/your-org/pitchin.git
-cd pitchin
-pnpm install
-cp .env.example .env     # add Stellar keys, storage config, optional model key
+git clone https://github.com/StellaERa/Pitchin.git
+cd Pitchin
+npm ci --prefix backend
+npm ci --prefix frontend
+cp backend/.env.example backend/.env   # add database, Stellar and storage config
 ```
 
 ### Run in development
 ```bash
-pnpm dev                                   # everything via Turborepo
-pnpm --filter @pitchin/app dev             # app only
-pnpm --filter @pitchin/api dev             # API only
-pnpm --filter @pitchin/indexer start:testnet
+npm run start:dev --prefix backend        # NestJS API
+npm run dev --prefix frontend             # Next.js app
+npm run build --prefix backend            # production API build
+npm run test --prefix frontend            # frontend unit tests
 ```
 
 ### Test
 ```bash
-cd packages/contracts && cargo test
-pnpm turbo test
-pnpm turbo lint
+cd contracts && cargo test
+npm test --prefix backend
+npm test --prefix frontend
 ```
 
 ### Deploy contracts to Testnet
 ```bash
-cd packages/contracts
+cd contracts
 stellar contract build
-bash ../../scripts/deploy_testnet.sh
+bash scripts/deploy_testnet.sh
 ```
 
 ---
