@@ -164,14 +164,11 @@ List endpoints accept \`page\` (default 1) and \`limit\` (default 20, max 100). 
 
   SwaggerModule.setup('swagger', app as any, document, ui);
 
-  app.setGlobalPrefix('/api');
-
   const server = await app.listen(process.env.PORT ?? 3000, '0.0.0.0');
 
   const shutdownService = app.get(GracefulShutdownService);
   shutdownService.setHttpServer(server);
   shutdownService.registerSignalHandlers();
-  await app.listen(process.env.PORT ?? 3000, '0.0.0.0');
   console.log(`Server is listening at: ${await app.getUrl()}`);
   console.log(
     `Swagger UI: ${await app.getUrl()}/swagger — JSON spec: ${await app.getUrl()}/swagger-json`,
