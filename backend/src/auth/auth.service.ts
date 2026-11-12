@@ -35,7 +35,7 @@ import { ErrorCatch } from '../utils/error';
 import { getCurrentActorFromAls } from '../common/utils/current-actor.util';
 import { createHash, timingSafeEqual } from 'node:crypto';
 
-const DEFAULT_PASSWORD_RESET_OT_MINUTES = 10;
+const DEFAULT_PASSWORD_RESET_OTP_MINUTES = 10;
 const MAX_LOGIN_ATTEMPTS = 5;
 const LOCKOUT_MINUTES = 15;
 
@@ -54,6 +54,8 @@ function matchesVerificationCode(
     : Buffer.alloc(expectedHash.length);
 
   return timingSafeEqual(expectedHash, actualHash) && hasValidHash;
+}
+
 // BE-17 — Single source of truth for email normalization. Every lookup,
 // uniqueness check, and persistence path must funnel through this helper so
 // case/whitespace variants resolve to one account.
@@ -79,14 +81,7 @@ export class AuthService {
     private readonly auditService: AuditService,
   ) {}
 
-  // BE-22 — `findOne({ where: { email } })` already excludes soft-deleted
-  // rows thanks to TypeORM's `@DeleteDateColumn` — so anonymous
-  // registration attempts against a previously-deleted email fail with
-  // EMAIL_ALREADY_EXIST rather than re-onboarding a deleted identity.
-
-  //create user
   async createUser(createUserDto: CreateUserDto) {
-    const email = createUserDto.email.trim().toLowerCase();
     const email = normalizeEmail(createUserDto.email);
     const existingUser = await this.userRepository.findOne({
       where: { email },
@@ -112,6 +107,7 @@ export class AuthService {
       );
       throw new ConflictException(UserMessages.IS_VALID_PASSWORD);
     }
+
     const hashedPassword = await this.userHelper.hashPassword(
       createUserDto.password,
     );
@@ -141,16 +137,13 @@ export class AuthService {
       role: newUser.role,
     });
 
-    const accessToken = this.jwtHelper.generateAccessToken(newUser);
-
     return {
       user: this.userHelper.formatUserResponse(newUser),
-      accessToken: accessToken,
+      accessToken: this.jwtHelper.generateAccessToken(newUser),
     };
   }
 
   async createAdminUser(createUserDto: CreateUserDto) {
-    const email = createUserDto.email.trim().toLowerCase();
     const email = normalizeEmail(createUserDto.email);
     const existingUser = await this.userRepository.findOne({
       where: { email },
@@ -176,6 +169,7 @@ export class AuthService {
       );
       throw new ConflictException(UserMessages.IS_VALID_PASSWORD);
     }
+
     const hashedPassword = await this.userHelper.hashPassword(
       createUserDto.password,
     );
@@ -200,11 +194,9 @@ export class AuthService {
       { email: newUser.email, role: newUser.role },
     );
 
-    const accessToken = this.jwtHelper.generateAccessToken(newUser);
-
     return {
       user: this.userHelper.formatUserResponse(newUser),
-      accessToken: accessToken,
+      accessToken: this.jwtHelper.generateAccessToken(newUser),
     };
   }
 
@@ -238,13 +230,11 @@ export class AuthService {
     if (!email) {
       throw new BadRequestException(UserMessages.EMAIL_REQUIRED);
     }
-
     if (!otp) {
       throw new BadRequestException(UserMessages.OTP_REQUIRED);
     }
 
     const user = await this.userRepository.findOne({ where: { email } });
-
     if (!user) {
       await this.auditService.authFailure(AuditAction.OTP_FAILED, email);
       throw new UnauthorizedException(UserMessages.USER_NOT_FOUND);
@@ -254,27 +244,24 @@ export class AuthService {
       !user.verificationCodeExpiresAt ||
       user.verificationCodeExpiresAt < new Date()
     ) {
-      await this.auditService.authFailure(
-        AuditAction.OTP_FAILED,
-        email,
-        { reason: 'expired', userId: user.id },
-      );
+      await this.auditService.authFailure(AuditAction.OTP_FAILED, email, {
+        reason: 'expired',
+        userId: user.id,
+      });
       throw new UnauthorizedException(UserMessages.OTP_EXPIRED);
     }
 
     if (!matchesVerificationCode(user.verificationCode, otp)) {
-      await this.auditService.authFailure(
-        AuditAction.OTP_FAILED,
-        email,
-        { reason: 'invalid_code', userId: user.id },
-      );
+      await this.auditService.authFailure(AuditAction.OTP_FAILED, email, {
+        reason: 'invalid_code',
+        userId: user.id,
+      });
       throw new UnauthorizedException(UserMessages.INVALID_OTP);
     }
 
     user.isVerified = true;
     user.verificationCode = '';
     user.verificationCodeExpiresAt = undefined;
-
     await this.userRepository.save(user);
 
     await this.auditService.authSuccess(AuditAction.OTP_VERIFIED, {
@@ -283,8 +270,6 @@ export class AuthService {
       role: user.role,
     });
 
-    // BE-04 — Persist the refresh token so the rotation flow (and the
-    // logout endpoint) can later invalidate it via DB lookup.
     const tokens = this.jwtHelper.generateTokens(user);
     await this.refreshTokenRepositoryOperations.saveRefreshToken(
       user,
@@ -294,13 +279,13 @@ export class AuthService {
     return {
       message: UserMessages.VERIFY_OTP_SUCCESS,
       user: this.userHelper.formatUserResponse(user),
-      tokens: tokens,
+      tokens,
     };
   }
 
-  async resendVerificationOtp(email: string) {
+  async resendVerificationOtp(emailInput: string) {
     try {
-      email = normalizeEmail(email);
+      const email = normalizeEmail(emailInput);
       if (!email) {
         throw new BadRequestException(UserMessages.EMAIL_REQUIRED);
       }
@@ -311,7 +296,6 @@ export class AuthService {
       }
 
       const verificationCode = this.userHelper.generateVerificationCode();
-
       user.verificationCode = hashVerificationCode(verificationCode);
       user.verificationCodeExpiresAt = moment().add(10, 'minutes').toDate();
       await this.userRepository.save(user);
@@ -324,9 +308,6 @@ export class AuthService {
 
       return { message: UserMessages.OTP_SENT };
     } catch (error) {
-      // #203 — Re-throw typed HTTP exceptions (e.g. BadRequestException,
-      // NotFoundException) unchanged so clients see the real 4xx status;
-      // only unexpected failures are normalised to 500.
       ErrorCatch(error, 'Error resending verification code');
     }
   }
@@ -334,12 +315,10 @@ export class AuthService {
   async login(loginUserDto: LoginUserDto) {
     const email = normalizeEmail(loginUserDto.email);
     const user = await this.userRepository.findOne({
-      where: { email: loginUserDto.email },
-      withDeleted: true,
       where: { email },
+      withDeleted: true,
     });
 
-    // BE-19 — soft-deleted accounts must not be able to authenticate.
     if (user && user.deletedAt) {
       await this.auditService.authFailure(
         AuditAction.LOGIN_FAILED,
@@ -349,8 +328,6 @@ export class AuthService {
       throw new UnauthorizedException(UserMessages.INVALID_CREDENTIALS);
     }
 
-    // B22 — locked accounts are rejected up-front with the exact same
-    // response shape as bad credentials (no account probing).
     if (user && user.lockoutUntil && user.lockoutUntil > new Date()) {
       await this.auditService.authFailure(AuditAction.LOGIN_FAILED, email, {
         reason: 'locked',
@@ -369,31 +346,27 @@ export class AuthService {
       if (user) {
         await this.bumpLoginFailure(user);
       }
-      await this.auditService.authFailure(
-        AuditAction.LOGIN_FAILED,
-        email,
-        { reason: !user ? 'unknown_email' : 'bad_password' },
-      );
+      await this.auditService.authFailure(AuditAction.LOGIN_FAILED, email, {
+        reason: !user ? 'unknown_email' : 'bad_password',
+      });
       throw new UnauthorizedException(UserMessages.INVALID_CREDENTIALS);
     }
 
-    // B22 — a successful authentication resets the failure state.
     if (user.failedLoginAttempts > 0 || user.lockoutUntil) {
       await this.userRepository.update(user.id, {
         failedLoginAttempts: 0,
-        lockoutUntil: null,
+        lockoutUntil: null as unknown as Date,
       });
       user.failedLoginAttempts = 0;
-      user.lockoutUntil = null;
+      user.lockoutUntil = undefined;
     }
 
     if (!user.isVerified) {
       await this.resendVerificationOtp(email);
-      await this.auditService.authFailure(
-        AuditAction.LOGIN_FAILED,
-        email,
-        { reason: 'unverified', userId: user.id },
-      );
+      await this.auditService.authFailure(AuditAction.LOGIN_FAILED, email, {
+        reason: 'unverified',
+        userId: user.id,
+      });
       return {
         message: UserMessages.EMAIL_NOT_VERIFIED,
         user: this.userHelper.formatUserResponse(user),
@@ -411,9 +384,6 @@ export class AuthService {
       return { requiresTwoFactor: true, tempToken };
     }
 
-    // BE-04 — Persist the refresh token on login so the rotation flow
-    // can later detect reuse. The DB row carries the family UUIFû the
-    // JWT carries the same family so we can correlate them.
     const { accessToken, refreshToken } = this.jwtHelper.generateTokens(user);
     await this.refreshTokenRepositoryOperations.saveRefreshToken(
       user,
@@ -421,12 +391,12 @@ export class AuthService {
     );
     return {
       user: this.userHelper.formatUserResponse(user),
-      accessToken: accessToken,
-      refreshToken: refreshToken,
+      accessToken,
+      refreshToken,
     };
   }
 
-  private async bumpLoginFailure(user: User) {
+  private async bumpLoginFailure(user: User): Promise<void> {
     const attempts = (user.failedLoginAttempts || 0) + 1;
     const update: Partial<User> = { failedLoginAttempts: attempts };
     if (attempts >= MAX_LOGIN_ATTEMPTS) {
@@ -444,64 +414,56 @@ export class AuthService {
    * and revoke the entire token family.
    */
   async refreshToken(refreshToken: string) {
-    const payload = this.jwtHelper.validateRefreshToken
-      ? this.jwtHelper.validateRefreshToken(refreshToken)
-      : this.jwtHelper.verifyRefreshToken(refreshToken);
+    const payload = this.jwtHelper.validateRefreshToken(refreshToken);
     if (!payload) {
       throw new UnauthorizedException(UserMessages.INVALID_CREDENTIALS);
     }
 
-    // Look up regardless of revoked state so we can detect replay.
-    const stored = await this.refreshTokenRepositoryOperations.findToken(
-      refreshToken,
-    );
+    const stored =
+      await this.refreshTokenRepositoryOperations.findToken(refreshToken);
 
     if (stored?.revoked) {
-      // BE-09 — already-rotated/revoked token presented again → kill family
       if (stored.family) {
         await this.refreshTokenRepositoryOperations.revokeFamily(
           stored.family,
           'replay',
         );
       }
-      await this.auditService.authFailure(
-        AuditAction.LOGIN_FAILED ?? AuditAction.REFRESH_FAILED,
-        null,
-        { reason: 'refresh_token_replay', family: stored.family },
-      );
+      await this.auditService.authFailure(AuditAction.LOGIN_FAILED, null, {
+        reason: 'refresh_token_replay',
+        family: stored.family,
+      });
       throw new UnauthorizedException(UserMessages.INVALID_CREDENTIALS);
     }
 
     const user = await this.userRepository.findOne({
-      where: { id: payload.sub },
+      where: { id: payload.userId },
       withDeleted: true,
     });
 
     if (!user || user.deletedAt) {
       await this.auditService.authFailure(
-        AuditAction.REFRESH_FAILED,
-        user?.email,
+        AuditAction.LOGIN_FAILED,
+        user?.email ?? null,
         { reason: !user ? 'unknown_user' : 'deleted', userId: user?.id },
       );
       throw new UnauthorizedException(UserMessages.INVALID_CREDENTIALS);
     }
 
     if (!stored || !stored.isUsable()) {
-      await this.auditService.authFailure(AuditAction.REFRESH_FAILED, user.email, {
+      await this.auditService.authFailure(AuditAction.LOGIN_FAILED, user.email, {
         reason: stored ? 'expired' : 'unknown',
         userId: user.id,
       });
       throw new UnauthorizedException(UserMessages.INVALID_CREDENTIALS);
     }
 
-    // Mark current token as rotated before minting the replacement.
     await this.refreshTokenRepositoryOperations.revokeRefreshToken(
       stored,
       'rotation',
     );
 
     const tokens = this.jwtHelper.generateTokens(user);
-    // Preserve family so lineage stays intact across ordinary rotations.
     await this.refreshTokenRepositoryOperations.saveRefreshToken(
       user,
       tokens.refreshToken,
@@ -514,49 +476,42 @@ export class AuthService {
     };
   }
 
-  /**
-   * BE-08 — Invalidate the refresh credential on logout (idempotent).
-   */
+  /** BE-08 — Invalidate the refresh credential on logout (idempotent). */
   async logout(refreshToken?: string, _userId?: string) {
-    if (!refreshToken) {
-      return { message: UserMessages.LOGOUT_SUCCESS };
-    }
-    try {
-      const stored =
-        await this.refreshTokenRepositoryOperations.findToken(refreshToken);
-      if (stored && !stored.revoked) {
-        await this.refreshTokenRepositoryOperations.revokeRefreshToken(
-          stored,
-          'logout',
-        );
+    if (refreshToken) {
+      try {
+        const stored =
+          await this.refreshTokenRepositoryOperations.findToken(refreshToken);
+        if (stored && !stored.revoked) {
+          await this.refreshTokenRepositoryOperations.revokeRefreshToken(
+            stored,
+            'logout',
+          );
+        }
+      } catch {
+        // Repeated logout / invalid token is safe — still report success.
       }
-    } catch {
-      // Repeated logout / invalid token is safe — still report success.
     }
     return { message: UserMessages.LOGOUT_SUCCESS };
   }
 
-  async sendPasswordResetOtp(dto: SendPasswordResetOtpDto) {
-    const user = await this.userRepository.findOne({
-      where: { email: dto.email },
-      withDeleted: true,
-    });
+  async retrieveUserById(userId: string): Promise<User> {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    if (!user) {
+      throw new UnauthorizedException(UserMessages.USER_NOT_FOUND);
+    }
+    return user;
+  }
 
-    // BE-19 — soft-deleted users must not be able to reset credentials.
-    if (user && user.deletedAt) {
-      await this.auditService.authFailure(
-        AuditAction.PASSWORD_RESET_REQUESTED,
-        dto.email,
-        { reason: 'deleted', userId: user.id },
+  async requestResetPasswordOtp(sendPasswordResetOtpDto: SendPasswordResetOtpDto) {
+    if (!sendPasswordResetOtpDto.email) {
+      throw new BadRequestException(UserMessages.EMAIL_REQUIRED);
+    }
+
     const email = normalizeEmail(sendPasswordResetOtpDto.email);
-    const user = await this.userRepository.findOne({
-      where: { email },
-    });
+    const user = await this.userRepository.findOne({ where: { email } });
 
     if (!user) {
-      // We deliberately throw NotFoundException with a generic message so
-      // the response is identical to the "user exists" path: callers cannot
-      // distinguish between an existing and a non-existing account.
       this.logger.warn(
         `Password-reset OTP requested for unknown email: ${email}`,
       );
@@ -565,19 +520,22 @@ export class AuthService {
         email,
         { reason: 'unknown_email' },
       );
-      throw new UnauthorizedException(UserMessages.INVALID_CREDENTIALS);
-    }
-
-    // Always respond with the same shape to avoid email enumeration.
-    if (!user) {
+      // Same response shape as the success path to avoid account enumeration.
       return { message: UserMessages.OTP_SENT };
     }
 
+    const otpMinutes = parseInt(
+      this.configService.get<string>('PASSWORD_RESET_OTP_MINUTES') ||
+        String(DEFAULT_PASSWORD_RESET_OTP_MINUTES),
+      10,
+    );
     const otp = this.userHelper.generateVerificationCode();
-    user.passwordResetOtp = otp;
-    user.passwordResetOtpExpiresAt = moment()
-      .add(DEFAULT_PASSWORD_RESET_OT_MINUTES, 'minutes')
+
+    user.passwordResetCode = otp;
+    user.passwordResetCodeExpiresAt = moment()
+      .add(otpMinutes, 'minutes')
       .toDate();
+    user.lastPasswordResetSentAt = new Date();
     await this.userRepository.save(user);
 
     await this.emailService.sendPasswordResetEmail(
@@ -586,13 +544,15 @@ export class AuthService {
       `${user.firstname} ${user.lastname}`,
     );
 
+    await this.auditService.authSuccess(AuditAction.PASSWORD_RESET_REQUEST, {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+    });
+
     return { message: UserMessages.OTP_SENT };
   }
 
-  async resetPassword(dto: ResetPasswordDto) {
-    const user = await this.userRepository.findOne({
-      where: { email: dto.email },
-      withDeleted: true,
   async resendResetPasswordVerificationOtp(resendOtpDto: ResendOtpDto) {
     try {
       if (!resendOtpDto.email) {
@@ -600,14 +560,12 @@ export class AuthService {
       }
 
       const email = normalizeEmail(resendOtpDto.email);
-      const user = await this.userRepository.findOne({
-        where: { email },
-      });
+      const user = await this.userRepository.findOne({ where: { email } });
       if (!user) {
         this.logger.warn(
           `Password-reset OTP resend requested for unknown email: ${email}`,
         );
-        throw new NotFoundException(UserMessages.OTP_SENT);
+        throw new NotFoundException(UserMessages.USER_NOT_FOUND);
       }
 
       const otpMinutes = parseInt(
@@ -618,13 +576,12 @@ export class AuthService {
       const otp = this.userHelper.generateVerificationCode();
 
       user.passwordResetCode = otp;
-      user.passwordResetCodeExpiresAt = moment().add(otpMinutes, 'minutes').toDate();
+      user.passwordResetCodeExpiresAt = moment()
+        .add(otpMinutes, 'minutes')
+        .toDate();
       user.lastPasswordResetSentAt = new Date();
       await this.userRepository.save(user);
 
-      // Best-effort delivery: failure here is logged but not surfaced, so
-      // an attacker cannot probe for the existence of an account by
-      // comparing success / failure responses.
       await this.emailService
         .sendPasswordResetEmail(
           user.email,
@@ -637,22 +594,14 @@ export class AuthService {
           );
         });
 
-      await this.auditService.authSuccess(
-        AuditAction.PASSWORD_RESET_REQUEST,
-        {
-          id: user.id,
-          email: user.email,
-          role: user.role,
-        },
-        // Note: action code is reused for the resend so dashboards can
-        // group them; the metadata disambiguates which one fired.
-      );
+      await this.auditService.authSuccess(AuditAction.PASSWORD_RESET_REQUEST, {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+      });
 
       return { message: UserMessages.OTP_SENT };
     } catch (error) {
-      // #204 — Re-throw typed HTTP exceptions (e.g. BadRequestException,
-      // NotFoundException) unchanged so clients see the real 4xx status;
-      // only unexpected failures are normalised to 500.
       ErrorCatch(error, 'Error resending verification code');
     }
   }
@@ -661,34 +610,20 @@ export class AuthService {
     if (!verifyOtpDto.email) {
       throw new BadRequestException(UserMessages.EMAIL_REQUIRED);
     }
-
     if (!verifyOtpDto.otp) {
       throw new BadRequestException(UserMessages.OTP_REQUIRED);
     }
 
     const email = normalizeEmail(verifyOtpDto.email);
-    const user = await this.userRepository.findOne({
-      where: { email },
-    });
+    const user = await this.userRepository.findOne({ where: { email } });
 
-    // BE-19 — soft-deleted users must not be able to reset credentials.
-    if (!user || user.deletedAt) {
-      await this.auditService.authFailure(
-        AuditAction.PASSWORD_RESET_FAILED,
-        dto.email,
-        { reason: !user ? 'unknown_email' : 'deleted', userId: user?.id },
-      );
-      throw new UnauthorizedException(UserMessages.INVALID_OTP);
+    if (!user) {
+      throw new NotFoundException(UserMessages.USER_NOT_FOUND);
     }
 
-    if (
-      !user.passwordResetOtp ||
-      user.passwordResetOtp !== dto.otp
-    ) {
+    if (user.passwordResetCode !== verifyOtpDto.otp) {
       await this.auditService.authFailure(
         AuditAction.PASSWORD_RESET_FAILED,
-        dto.email,
-        { reason: 'invalid_otp', userId: user.id },
         email,
         { reason: 'invalid_code', userId: user.id },
       );
@@ -696,45 +631,103 @@ export class AuthService {
     }
 
     if (
-      !user.passwordResetOtpExpiresAt ||
-      user.passwordResetOtpExpiresAt < new Date()
+      !user.passwordResetCodeExpiresAt ||
+      user.passwordResetCodeExpiresAt < new Date()
     ) {
       await this.auditService.authFailure(
         AuditAction.PASSWORD_RESET_FAILED,
-        dto.email,
         email,
         { reason: 'expired', userId: user.id },
       );
       throw new UnauthorizedException(UserMessages.OTP_EXPIRED);
     }
 
-    if (!this.userHelper.isValidPassword(dto.password)) {
+    return { message: UserMessages.OTP_VERIFIED };
+  }
+
+  async resetPassword(resetPasswordDto: ResetPasswordDto) {
+    const { otp, newPassword, confirmNewPassword } = resetPasswordDto;
+
+    if (!this.userHelper.isValidPassword(newPassword)) {
+      await this.auditService.authFailure(
+        AuditAction.PASSWORD_RESET_FAILED,
+        null,
+        { reason: 'weak_password' },
+      );
       throw new BadRequestException(UserMessages.IS_VALID_PASSWORD);
     }
 
-    user.password = await this.userHelper.hashPassword(dto.password);
-    user.passwordResetOtp = undefined;
-    user.passwordResetOtpExpiresAt = undefined;
-    user.failedLoginAttempts = 0;
-    user.lockoutUntil = null;
-    await this.userRepository.save(user);
+    if (newPassword !== confirmNewPassword) {
+      throw new BadRequestException(UserMessages.PASSWORDS_DO_NOT_MATCH);
+    }
 
-    await this.auditService.authSuccess(AuditAction.PASSWORD_RESET, {
-      id: user.id,
-      email: user.email,
-      role: user.role,
+    const owner = await this.userRepository.findOneBy({
+      passwordResetCode: otp,
     });
 
-    return { message: UserMessages.PASSWORD_RESET_SUCCESS };
+    if (!owner) {
+      await this.auditService.authFailure(
+        AuditAction.PASSWORD_RESET_FAILED,
+        null,
+        { reason: 'unknown_or_used_code' },
+      );
+      throw new UnauthorizedException('Invalid or expired reset code');
+    }
+
+    if (
+      !owner.passwordResetCodeExpiresAt ||
+      owner.passwordResetCodeExpiresAt < new Date()
+    ) {
+      await this.auditService.authFailure(
+        AuditAction.PASSWORD_RESET_FAILED,
+        owner.email,
+        { reason: 'expired', userId: owner.id },
+      );
+      throw new UnauthorizedException(UserMessages.OTP_EXPIRED);
+    }
+
+    // Consume the OTP in the same statement that changes the password so two
+    // concurrent resets cannot both succeed.
+    const hashedPassword = await this.userHelper.hashPassword(newPassword);
+    const updateResult = await this.userRepository.update(
+      {
+        id: owner.id,
+        passwordResetCode: otp,
+        passwordResetCodeExpiresAt: MoreThan(new Date()),
+      },
+      {
+        password: hashedPassword,
+        passwordResetCode: null as unknown as string,
+        passwordResetCodeExpiresAt: null as unknown as Date,
+        failedLoginAttempts: 0,
+        lockoutUntil: null as unknown as Date,
+      },
+    );
+
+    if (!updateResult.affected) {
+      await this.auditService.authFailure(
+        AuditAction.PASSWORD_RESET_FAILED,
+        owner.email,
+        { reason: 'race_or_expired', userId: owner.id },
+      );
+      throw new UnauthorizedException('Invalid or expired reset code');
+    }
+
+    await this.auditService.authSuccess(AuditAction.PASSWORD_RESET_SUCCESS, {
+      id: owner.id,
+      email: owner.email,
+      role: owner.role,
+    });
+
+    return { message: UserMessages.PASSWORDS_RESET_SUCCESSFUL };
   }
 
   async resendOtp(dto: ResendOtpDto) {
     const user = await this.userRepository.findOne({
-      where: { email: dto.email },
+      where: { email: normalizeEmail(dto.email) },
       withDeleted: true,
     });
 
-    // BE-19 — soft-deleted users must not be able to request new OTPs.
     if (!user || user.deletedAt) {
       throw new NotFoundException(UserMessages.USER_NOT_FOUND);
     }
@@ -742,9 +735,9 @@ export class AuthService {
     return this.resendVerificationOtp(dto.email);
   }
 
-  async setup2fa(userId: string, dto?: Setup2faDto) {
+  async setup2fa(userId: string) {
     const user = await this.getActiveUserOrThrow(userId);
-    return this.setupTotpProvider.setup(user, dto);
+    return this.setupTotpProvider.setup(user);
   }
 
   async confirm2fa(userId: string, dto: Setup2faDto) {
@@ -752,34 +745,57 @@ export class AuthService {
     return this.setupTotpProvider.confirm2faSetup(userId, dto);
   }
 
-  async verifyTotp(userId: string, dto: VerifyTotpDto) {
-    const user = await this.getActiveUserOrThrow(userId);
-    return this.verifyTotpProvider.verify(user, dto);
+  async verifyTotpLogin(dto: VerifyTotpDto) {
+    try {
+      const result = await this.verifyTotpProvider.verifyTotpLogin(dto);
+      await this.auditService.authSuccess(
+        AuditAction.TOTP_LOGIN_SUCCESS,
+        {},
+      );
+      return result;
+    } catch (err) {
+      await this.auditService.authFailure(
+        AuditAction.TOTP_LOGIN_FAILED,
+        null,
+        { reason: (err as Error)?.message },
+      );
+      throw err;
+    }
   }
 
-  async useBackupCode(userId: string, dto: UseBackupCodeDto) {
-    await this.getActiveUserOrThrow(userId);
-    // BE-12 — one-time atomic consumption (rejects unknown / replayed codes).
-    const result = await this.manageTotpProvider.consumeBackupCode(
-      userId,
-      dto.backupCode,
+  async verifyBackupCode(dto: UseBackupCodeDto) {
+    const result = await this.verifyTotpProvider.verifyBackupCode(dto);
+    await this.auditService.authSuccess(
+      AuditAction.BACKUP_CODE_CONSUMED,
+      {},
     );
-    const user = await this.getActiveUserOrThrow(userId);
-    const tokens = this.jwtHelper.generateTokens(user);
-    return {
-      user: { id: user.id, email: user.email, role: user.role },
-      ...tokens,
-      backupCodesRemaining: result.backupCodesRemaining,
-    };
+    return result;
   }
 
   async disable2fa(userId: string, dto: Disable2faDto) {
-    const user = await this.getActiveUserOrThrow(userId);
-    return this.manageTotpProvider.disable(user, dto);
+    await this.getActiveUserOrThrow(userId);
+    const result = await this.manageTotpProvider.disable2fa(userId, dto);
+    await this.auditService.authSuccess(AuditAction.TOTP_DISABLED, {
+      id: userId,
+    });
+    return result;
+  }
+
+  async get2faStatus(userId: string) {
+    return this.manageTotpProvider.get2faStatus(userId);
   }
 
   async regenerateBackupCodes(userId: string, password: string) {
-    return this.manageTotpProvider.regenerateBackupCodes(userId, password);
+    await this.getActiveUserOrThrow(userId);
+    const result = await this.manageTotpProvider.regenerateBackupCodes(
+      userId,
+      password,
+    );
+    await this.auditService.authSuccess(
+      AuditAction.BACKUP_CODES_REGENERATED,
+      { id: userId },
+    );
+    return result;
   }
 
   private async getActiveUserOrThrow(userId: string): Promise<User> {
