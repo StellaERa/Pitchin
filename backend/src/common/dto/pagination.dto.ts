@@ -90,15 +90,22 @@ export function buildPaginationMeta(
   page: number,
   limit: number,
 ): PaginationMetaDto {
-  const safeLimit = Math.max(1, limit);
-  const totalPages = Math.max(1, Math.ceil(total / safeLimit));
+  // Guard the pure helper even when called outside DTO validation: a
+  // non-positive page/limit (or a negative total) must never produce
+  // negative page counts or a nonsensical hasPreviousPage flag.
+  const safeTotal = Number.isFinite(total) ? Math.max(0, Math.trunc(total)) : 0;
+  const safeLimit = Number.isFinite(limit)
+    ? Math.max(1, Math.trunc(limit))
+    : DEFAULT_LIMIT;
+  const safePage = Number.isFinite(page) ? Math.max(1, Math.trunc(page)) : DEFAULT_PAGE;
+  const totalPages = Math.max(1, Math.ceil(safeTotal / safeLimit));
   return {
-    currentPage: page,
+    currentPage: safePage,
     itemsPerPage: safeLimit,
-    totalItems: total,
+    totalItems: safeTotal,
     totalPages,
-    hasPreviousPage: page > 1,
-    hasNextPage: page < totalPages,
+    hasPreviousPage: safePage > 1,
+    hasNextPage: safePage < totalPages,
   };
 }
 
@@ -113,14 +120,16 @@ export function paginatedResponse<T>(
   page: number,
   limit: number,
 ) {
+  const meta = buildPaginationMeta(total, page, limit);
   return {
     message,
     items,
-    total,
-    page,
-    limit,
-    totalPages: Math.max(1, Math.ceil(total / Math.max(1, limit))),
-    hasPreviousPage: page > 1,
-    hasNextPage: page < Math.max(1, Math.ceil(total / Math.max(1, limit))),
+    total: meta.totalItems,
+    page: meta.currentPage,
+    limit: meta.itemsPerPage,
+    totalPages: meta.totalPages,
+    hasPreviousPage: meta.hasPreviousPage,
+    hasNextPage: meta.hasNextPage,
+    meta,
   };
 }
