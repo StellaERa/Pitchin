@@ -6,6 +6,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuthState, useAuthActions } from "@/lib/store/authStore";
 import { apiClient } from "@/lib/apiClient";
+import { storage } from "@/lib/storage";
 import { env } from "@/utils/env";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Camera } from "lucide-react";
@@ -84,7 +85,9 @@ export default function ProfilePage() {
         {
           method: "POST",
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("accessToken") || ""}`,
+            // The token is persisted under the `authToken` key; reading a
+            // different key sent the upload anonymously and returned 401.
+            Authorization: `Bearer ${storage.getToken() ?? ""}`,
           },
           body: formData,
         }
