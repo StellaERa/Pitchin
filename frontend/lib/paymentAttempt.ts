@@ -52,6 +52,9 @@ export function paymentAttemptReducer(
 ): PaymentAttemptState {
   switch (event.type) {
     case "initialize":
+      // Once the backend has confirmed payment, a late initialise event (for
+      // example a double click) must not downgrade the state and hide success.
+      if (state.status === "paid") return state;
       return { status: "initializing", message: null };
 
     case "initialized":

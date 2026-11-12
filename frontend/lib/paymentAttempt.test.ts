@@ -65,6 +65,22 @@ describe("paymentAttemptReducer (FE-09)", () => {
     expect(paymentAttemptReducer(paid, { type: "provider-closed" })).toBe(paid);
   });
 
+  it("ignores a late initialise after the payment was confirmed", () => {
+    const paid = go(initialPaymentAttemptState, { type: "confirmed" });
+
+    expect(paymentAttemptReducer(paid, { type: "initialize" })).toBe(paid);
+  });
+
+  it("allows a new attempt to initialise after a failure", () => {
+    const failed = paymentAttemptReducer(initialPaymentAttemptState, {
+      type: "failed",
+    });
+
+    expect(paymentAttemptReducer(failed, { type: "initialize" }).status).toBe(
+      "initializing"
+    );
+  });
+
   it("records a failure with the server message, or generic copy", () => {
     const failed = paymentAttemptReducer(initialPaymentAttemptState, {
       type: "failed",
