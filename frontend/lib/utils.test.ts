@@ -23,6 +23,12 @@ describe("formatDate", () => {
   it("handles invalid date strings", () => {
     expect(formatDate("invalid-date")).toBe("Invalid date");
   });
+
+  it("keeps a date-only value on its calendar day in every timezone", () => {
+    // Parsing YYYY-MM-DD as UTC midnight used to render the previous day for
+    // users west of UTC.
+    expect(formatDate("2026-08-29")).toBe("Aug 29, 2026");
+  });
 });
 
 /**
