@@ -77,7 +77,7 @@ export class ReconciliationService {
         continue;
       }
 
-      const result = this.reconcilePair(invoice, payment);
+      const result = await this.reconcilePair(invoice, payment);
       switch (result) {
         case 'fixed':
           fixed++;
@@ -114,7 +114,7 @@ export class ReconciliationService {
     invoiceId: string,
     paymentId: string,
   ): Promise<boolean> {
-    return this.reportsRepo.exist({
+    return this.reportsRepo.exists({
       where: {
         invoiceId,
         paymentId,
@@ -123,10 +123,10 @@ export class ReconciliationService {
     });
   }
 
-  private reconcilePair(
+  private async reconcilePair(
     invoice: Invoice,
     payment: Payment,
-  ): 'matched' | 'fixed' | 'failed' {
+  ): Promise<'matched' | 'fixed' | 'failed'> {
     // Case 1: Payment succeeded but invoice still PENDING
     if (
       payment.status === PaymentStatus.SUCCESS &&
@@ -135,8 +135,8 @@ export class ReconciliationService {
       this.transitionProvider.validateTransition(invoice.status, InvoiceStatus.PAID);
       invoice.status = InvoiceStatus.PAID;
       invoice.paidAt = payment.paidAt ?? new Date();
-      this.invoicesRepo.save(invoice);
-      this.recordReport(
+      await this.invoicesRepo.save(invoice);
+      await this.recordReport(
         invoice,
         payment,
         ReconciliationOutcome.FIXED,
@@ -155,8 +155,8 @@ export class ReconciliationService {
     ) {
       this.transitionProvider.validateTransition(invoice.status, InvoiceStatus.VOID);
       invoice.status = InvoiceStatus.VOID;
-      this.invoicesRepo.save(invoice);
-      this.recordReport(
+      await this.invoicesRepo.save(invoice);
+      await this.recordReport(
         invoice,
         payment,
         ReconciliationOutcome.FIXED,
@@ -169,7 +169,7 @@ export class ReconciliationService {
     }
 
     // Case 3: Both match or no action needed
-    this.recordReport(
+    await this.recordReport(
       invoice,
       payment,
       ReconciliationOutcome.MATCHED,
