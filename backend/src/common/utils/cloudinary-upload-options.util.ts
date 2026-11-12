@@ -11,6 +11,13 @@ export interface CloudinaryUploadOptions {
 /** B19 – Cloudinary accepts exactly these resource types at runtime. */
 const SUPPORTED_RESOURCE_TYPES = new Set(['image', 'video', 'raw', 'auto']);
 
+function assertPositiveDimension(name: string, value: number | undefined): void {
+  if (value === undefined) return;
+  if (!Number.isInteger(value) || value <= 0) {
+    throw new Error(`${name} must be a positive integer, received "${value}"`);
+  }
+}
+
 export function buildCloudinaryUploadOptions({
   folder,
   resourceType = 'image',
@@ -25,6 +32,12 @@ export function buildCloudinaryUploadOptions({
       `Unsupported Cloudinary resource_type: "${resourceType}"`,
     );
   }
+
+  assertPositiveDimension('maxWidth', maxWidth);
+  assertPositiveDimension('maxHeight', maxHeight);
+  assertPositiveDimension('thumbnailWidth', thumbnailWidth);
+  assertPositiveDimension('thumbnailHeight', thumbnailHeight);
+
   return {
     folder: folder || 'uploads',
     resource_type: resourceType,

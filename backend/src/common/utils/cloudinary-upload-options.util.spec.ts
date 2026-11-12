@@ -28,4 +28,22 @@ describe('buildCloudinaryUploadOptions', () => {
       },
     ]);
   });
+
+  it.each([
+    ['maxWidth', 0],
+    ['maxHeight', -1],
+    ['thumbnailWidth', 1.5],
+    ['thumbnailHeight', Number.NaN],
+  ] as const)('rejects an invalid %s', (name, value) => {
+    expect(() => buildCloudinaryUploadOptions({ [name]: value })).toThrow(
+      new RegExp(`${name} must be a positive integer`),
+    );
+  });
+
+  it('rejects an unsupported resource type', () => {
+    expect(() =>
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      buildCloudinaryUploadOptions({ resourceType: 'pdf' as any }),
+    ).toThrow(/Unsupported Cloudinary resource_type/);
+  });
 });
