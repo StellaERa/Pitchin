@@ -72,6 +72,40 @@ describe('CsvExportService', () => {
     expect(csv).toContain('2026-01-15T10:00:00.000Z');
   });
 
+  describe('toCsvStream', () => {
+    async function* rows(items: Record<string, unknown>[]) {
+      for (const item of items) yield item;
+    }
+
+    async function collect(
+      stream: AsyncGenerator<string, void, unknown>,
+    ): Promise<string> {
+      let output = '';
+      for await (const chunk of stream) output += chunk;
+      return output;
+    }
+
+    it('escapes header and value fields consistently with toCsv', async () => {
+      const csv = await collect(
+        service.toCsvStream(rows([{ value: '=SUM(A1:A10)' }]), [
+          { key: 'value', header: 'Value, with comma' },
+        ]),
+      );
+
+      const lines = csv.trim().split('\n');
+      expect(lines[0]).toBe('"Value, with comma"');
+      expect(lines[1]).toBe("'=SUM(A1:A10)");
+    });
+
+    it('escapes headers even when there are no data rows', async () => {
+      const csv = await collect(
+        service.toCsvStream(rows([]), [{ key: 'name', header: 'Na"me' }]),
+      );
+
+      expect(csv).toBe('"Na""me"\n');
+    });
+  });
+
   describe('formula injection prevention', () => {
     const columns = [{ key: 'value', header: 'Value' }];
 

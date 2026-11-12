@@ -8,7 +8,7 @@ export class CsvExportService {
    */
   toCsv(data: Record<string, unknown>[], columns: Array<{ key: string; header: string }>): string {
     if (data.length === 0) {
-      return columns.map((c) => c.header).join(',') + '\n';
+      return columns.map((c) => this.escapeField(c.header)).join(',') + '\n';
     }
 
     const header = columns.map((c) => this.escapeField(c.header)).join(',');
@@ -32,7 +32,7 @@ export class CsvExportService {
     dataIterator: AsyncIterable<Record<string, unknown>>,
     columns: Array<{ key: string; header: string }>,
   ): AsyncGenerator<string, void, unknown> {
-    yield columns.map((c) => c.header).join(',') + '\n';
+    yield columns.map((c) => this.escapeField(c.header)).join(',') + '\n';
 
     for await (const row of dataIterator) {
       yield columns
